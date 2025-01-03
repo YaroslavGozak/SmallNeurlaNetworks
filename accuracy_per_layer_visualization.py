@@ -3,7 +3,7 @@ from itertools import groupby
 from operator import add
 import pandas as pd
 import os
-import numpy as np
+from numpy import interp
 import torch
 # Matplot lib for plots
 import matplotlib.pylab as plt
@@ -43,25 +43,36 @@ def get_color2(name):
 
 def get_color_by_acc(accuracy, min_accuracy, max_accuracy):
     r = 0 if accuracy == max_accuracy else 0.5
-    g = (accuracy - min_accuracy) * 33
-    b = (accuracy - min_accuracy) * 33
+    g = interp(accuracy, [min_accuracy, max_accuracy], [0, 1])
+    b = interp(accuracy, [min_accuracy, max_accuracy], [0, 1])
+    print(accuracy)
+    print(r, g, b)
     return (r, g, b)
 
-def plot_dots(cnn_datas, max_accuracy):
+def plot_dots(cnn_datas, min_accuracy, max_accuracy):
     fig, ax1 = plt.subplots()
     color = 'tab:red'
     for cnn_data in cnn_datas:
-        ax1.plot(cnn_data.time, cnn_data.accuracy, label=cnn_data.name, color=get_color_by_acc(cnn_data.accuracy, max_accuracy), marker='*')
+        ax1.plot(cnn_data.time, cnn_data.accuracy, label=cnn_data.name, color=get_color_by_acc(cnn_data.accuracy, min_accuracy, max_accuracy), marker='*')
 
     ax1.set_xlabel('Time', color=color)
     ax1.set_ylabel('Accuracy', color=color)
     ax1.tick_params(axis='y', color=color)
     return fig
 
-def plot_lines(cnn_datas, min_accuracy, max_accuracy):
+def plot_lines(cnn_datas, group_layer):
     cnn_datas = list(cnn_datas)
-    cnn_datas.sort(key=lambda cnn_data: (cnn_data.first_layer, cnn_data.second_layer))
-    grouped = groupby(cnn_datas, key=lambda cnn_data: cnn_data.first_layer)
+    if group_layer == 1:
+        print("Group layer 1")
+        sort_key=lambda cnn_data: (cnn_data.first_layer, cnn_data.second_layer)
+        group_key=lambda cnn_data: cnn_data.first_layer
+    else:
+        print("Group layer 2")
+        sort_key=lambda cnn_data: (cnn_data.second_layer, cnn_data.first_layer)
+        group_key=lambda cnn_data: cnn_data.second_layer
+
+    cnn_datas.sort(key=sort_key)
+    grouped = groupby(cnn_datas, key=group_key)
     fig, axs = plt.subplots()
     color = 'tab:red'
     x = []
@@ -85,12 +96,29 @@ def plot_lines(cnn_datas, min_accuracy, max_accuracy):
 parser = argparse.ArgumentParser(prog='visualization')
 
 parser.add_argument('mode', choices=['show', 'save'])
+parser.add_argument('--path')
+parser.add_argument('-g', '--group_layer', choices=['1', '2'])
 args = parser.parse_args()
 
 print('Plotting accuracy results...')
 
 cnn_datas = [CnnData]
-path = Path('D:/NeuralNetworks/training_2024_12_24x128')
+default_path = 'D:/NeuralNetworks/training_2024_12_24x128'
+path = ''
+group_layer = None
+if args.path is not None and args.path != '':
+    path = Path(args.path)
+    print(f'Path: "{path}"')
+else:
+    path = Path(default_path)
+    print(f'Path not specified, using default path. ("{path}")')
+
+if args.group_layer is not None and args.group_layer != '' and args.group_layer.isnumeric():
+    print(f'Grouping layer is set to {args.group_layer}')
+    group_layer = int(args.group_layer)
+else:
+    print('Grouping layer not set')
+
 cnn_directories = filter(lambda x: (not x.match('Datasets') and not x.match('small_cnn_2x.*')),  path.iterdir()) 
 for cnn_directory in cnn_directories:
     cnn_data = CnnData()
@@ -119,7 +147,10 @@ for cnn_data in cnn_datas:
 
 print(f"Accuracy range: {min_accuracy} - {max_accuracy}")
 
-fig = plot_lines(cnn_datas, min_accuracy, max_accuracy)
+if group_layer is not None:
+    fig = plot_lines(cnn_datas, group_layer)
+else:
+    fig = plot_dots(cnn_datas, min_accuracy, max_accuracy)
                 
 fig.tight_layout()
 
