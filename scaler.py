@@ -16,26 +16,26 @@ class LabelData:
     label = ''
     image_name = ''
 
-def get_datasets(base_path, dataset_name, composed):
+def get_datasets(base_path, dataset_name):
         match dataset_name:
             case 'mnist':
                 download = False
-                if not Path(f"{base_path}/Datasets/MNIST").exists():
+                if not Path(f"{base_path}/MNIST").exists():
                     download = True
-                train_dataset = dsets.MNIST(f"{base_path}/Datasets/MNIST", train=True, download=download)
-                validation_dataset = dsets.MNIST(root=f'{base_path}/Datasets/MNIST', train=False, download=download)
+                train_dataset = dsets.MNIST(f"{base_path}/MNIST", train=True, download=download)
+                validation_dataset = dsets.MNIST(root=f'{base_path}/MNIST', train=False, download=download)
             case 'cifar100':
                 download = False
-                if not Path(f"{base_path}/Datasets/CIFAR100_train").exists():
+                if not Path(f"{base_path}/CIFAR100_train").exists():
                     download = True
-                train_dataset = dsets.CIFAR100(root=f"{base_path}/Datasets/CIFAR100_train", train=True, download=download)
-                validation_dataset = dsets.CIFAR100(root=f"{base_path}/Datasets/CIFAR100_valid", train=False, download=download)
+                train_dataset = dsets.CIFAR100(root=f"{base_path}/CIFAR100_train", train=True, download=download)
+                validation_dataset = dsets.CIFAR100(root=f"{base_path}/CIFAR100_valid", train=False, download=download)
             case 'cifar10':
                 download = False
-                if not Path(f"{base_path}/Datasets/CIFAR10_train").exists():
+                if not Path(f"{base_path}/Cifar10/CIFAR10_train").exists():
                     download = True
-                train_dataset = dsets.CIFAR10(root=f"{base_path}/Datasets/CIFAR10_train", train=True, download=download)
-                validation_dataset = dsets.CIFAR10(root=f"{base_path}/Datasets/CIFAR10_valid", train=False, download=download)
+                train_dataset = dsets.CIFAR10(root=f"{base_path}/Cifar10/CIFAR10_train", train=True, download=download)
+                validation_dataset = dsets.CIFAR10(root=f"{base_path}/Cifar10/CIFAR10_valid", train=False, download=download)
             case _:
                 raise Exception("--dataset must be cifar100, cifar10 or mnist")
         return train_dataset, validation_dataset
@@ -63,22 +63,19 @@ image_size = 16
 parser = argparse.ArgumentParser(prog='scaler')
 
 parser.add_argument('--target_size')
-parser.add_argument('--dataset', choices=['mnist'])
+parser.add_argument('--dataset', choices=['mnist', 'cifar10'])
 args = parser.parse_args()
 dataset_name = 'mnist' if args.dataset is None else args.dataset
 target_size = 64 if args.target_size is None else int(args.target_size)
 
-base_path = "D:/NeuralNetworks/Datasets"
+base_path = "H:/Projects/University/NeauralNetworks/Datasets"
 scaled_images_path = base_path + f"/{dataset_name}_scaled_{str(target_size)}"
 save_path_train_dir = scaled_images_path + '/train'
 save_path_val_dir = scaled_images_path + '/validation'
 save_path_labels_dir = scaled_images_path + '/labels'
 Path(save_path_labels_dir).mkdir(parents=True, exist_ok=True)
 
-# First the image is resized then converted to a tensor
-composed = transforms.Compose([transforms.Resize((image_size, image_size)), transforms.ToTensor()])
-
-train_dataset, validation_dataset = get_datasets(base_path, dataset_name, composed)
+train_dataset, validation_dataset = get_datasets(base_path, dataset_name)
 
 labels = [LabelData]
 Path(save_path_val_dir).mkdir(parents=True, exist_ok=True)

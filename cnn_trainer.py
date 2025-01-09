@@ -1,6 +1,6 @@
 from datetime import datetime
 import time
-from constants import ALLOWED_DATASETS, CIFAR_IMAGE_SIZE, MNIST128_IMAGE_SIZE, MNIST64_IMAGE_SIZE, MNIST_IMAGE_SIZE
+from constants import ALLOWED_DATASETS, IMAGE_SIZES
 from custom_image_dataset import CustomImageDataset
 from models.alexnet import AlexNet
 from models.alexnet_32 import AlexNet32
@@ -37,7 +37,11 @@ from models.small_cnn_5x5_dilation import Small_CNN_5x5_dilation
 from models.small_cnn_7x7 import Small_CNN_7x7
 from models.small_cnn_9x9x5 import Small_CNN_9x9x5
 from models.small_cnn_9x9 import Small_CNN_9x9
+from models.small_cnn_generic_cifar import Small_CNN_Generic_Cifar
+from models.small_cnn_generic_cifar_im128 import Small_CNN_Generic_Cifar_im128
 from models.small_cnn_generic_im128 import Small_CNN_Generic_im128
+from models.small_cnn_generic_im256 import Small_CNN_Generic_im256
+from models.small_cnn_generic_im32 import Small_CNN_Generic_im32
 from models.small_cnn_generic_im64 import Small_CNN_Generic_im64
 
 class CnnTrainer:
@@ -45,12 +49,12 @@ class CnnTrainer:
     def __init__(self):
         self.data = []
 
-    default_path = "D:/NeuralNetworks"
+    default_path = "H:/Projects/University/NeauralNetworks"
     base_path = ""
     model_name = ""
     mode = ""
     plot_misclassified_samples = False
-    plot_channels_activations = False
+    plot_channels_activations = True
     allowed_modes = ['test', 'train', 'performance']
     
     iterate = False
@@ -65,8 +69,8 @@ class CnnTrainer:
             print(f"GPU: {torch.cuda.get_device_name(0)} is available.")
         else:
             print("No GPU available. Training will run on CPU.")
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        print(device)
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        print(self.device)
 
         today = datetime.today().strftime('%Y-%m-%d_%H.%M.%S')
 
@@ -86,12 +90,12 @@ class CnnTrainer:
 
         # Create the model object using CNN class
         self.model = self.create_model(self.model_name)
+        # Move model to appropriate device (cuda if GPU available and cpu otherwise)
+        self.model = self.model.to(self.device)
 
         self.folder_path = self.base_path + '/' + self.model_name
         today_path = f'{self.folder_path}/{today}'
         latest_path = f'{self.folder_path}/latest'
-        print(train_dataset[1][0].size())
-        # out = self.model.activations(train_dataset[1][0].view(1, 3, IMAGE_SIZE, IMAGE_SIZE))
 
         # Plot the parameters
 
@@ -108,15 +112,33 @@ class CnnTrainer:
             # Create a Data Loader for the training data with a batch size of 256 
             self.train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=256)
             # Create a Data Loader for the validation data with a batch size of 5000 
-            self.validation_loader = torch.utils.data.DataLoader(dataset=validation_dataset, batch_size=5000)
+            self.validation_loader = torch.utils.data.DataLoader(dataset=validation_dataset, batch_size=256)
+
 
             print("Training model...")
             # List to keep track of cost and accuracy
             self.cost_list=[]
             self.accuracy_list=[]
+            self.performance_list=[]
 
             start = time.time()
-            self.train_model(self.epochs)
+            # Loops for each epoch
+            for epoch in range(self.epochs):
+                # Train model
+                print(f'Training epoch {epoch + 1}/{self.epochs}')
+                self.train_model(epoch, self.epochs)
+
+                # Validate model
+                print(f'Validating epoch {epoch + 1}/{self.epochs}')
+                validation_start = time.time()
+                # Keeps track of correct predictions
+                accuracy = self.calculate_accuracy()
+                self.accuracy_list.append(accuracy)
+                validation_end = time.time()
+                elapsed_time_total = validation_end - validation_start
+                # Calculate average evaluation time
+                time_per_sample = elapsed_time_total / self.N_validation
+                self.performance_list.append(time_per_sample)
             end = time.time()
             elapsed_time = round(end - start, 1)
             print(f'Elapsed time: {elapsed_time} secs')
@@ -146,12 +168,20 @@ class CnnTrainer:
             # ======== Saving data ===========
 
             print(f'Saving model to disk')
+            avg_performance = sum(self.performance_list) / self.epochs # performance was measured once per epoch
+            print('========== Model data ==========')
+            print(f'Average time per sample | {avg_performance}')
+            print(f'Accuracy                | {self.accuracy_list}')
+            print(f'Cost                    | {self.cost_list}')
+            print(f'Total training time     | {elapsed_time}')
+            print('================================')
             for save_path in [today_path, latest_path]:
                 self.ensure_folder_exists(f'{save_path}')
                 self.ensure_folder_exists(f'{save_path}/TrainingResults')
                 
                 torch.save(self.model.state_dict(), f'{save_path}/model.pt')
                 torch.save(elapsed_time, f'{save_path}/performance.pt')
+                torch.save(avg_performance, f'{save_path}/time_per_sample.pt')
                 torch.save(self.accuracy_list, f'{save_path}/accuracy.pt')
                 torch.save(self.cost_list, f'{save_path}/cost.pt')
             
@@ -159,24 +189,28 @@ class CnnTrainer:
             plt.savefig(f'{today_path}/TrainingResults/accuracy.jpg')
             print('Model saved')
 
-        else:
+        else: # Performance check
             path = f'{self.folder_path}/latest'
             print(f'Loading model fromn disk: {path}/model.pt')
             self.model = self.load_model(self.model, path)
             print(f'Model loaded: {type(self.model).__name__}')
             if self.mode == 'performance':
                 # Create a Data Loader for the validation data with a batch size of 5000 
-                self.validation_loader = torch.utils.data.DataLoader(dataset=validation_dataset, batch_size=5000)
-                start = time.time()
+                self.validation_loader = torch.utils.data.DataLoader(dataset=validation_dataset, batch_size=256)
+                # Validate model
+                print('Validating model')
+                validation_start = time.time()
+                # Keeps track of correct predictions
                 accuracy = self.calculate_accuracy()
-                end = time.time()
-                elapsed_time = round(end - start, 1)
-                print(f'Elapsed time: {elapsed_time} secs')
+                validation_end = time.time()
+                elapsed_time_total = validation_end - validation_start
+                # Calculate average evaluation time
+                time_per_sample = elapsed_time_total / self.N_validation
+                print(f'Time per sample: {time_per_sample * 1000} millisecs')
                 print(f'Accuracy: {accuracy}')
-                torch.save({
-                    elapsed_time,
-                    accuracy
-                    }, f'{path}/performance.pt')
+                # torch.save(time_per_sample, f'{save_path}/time_per_sample.pt')
+                # torch.save([accuracy], f'{save_path}/accuracy.pt')
+                return self.model_name, self.dataset_name, accuracy, time_per_sample
         
 
         if self.plot_channels_activations:
@@ -190,11 +224,12 @@ class CnnTrainer:
 
             # Show the second image
 
-            show_data(train_dataset[1], self.image_size)
+            show_data(train_dataset[1], self.image_size, self.dataset_name)
 
             print('Plotting activations and images...')
             # Use the CNN activations class to see the steps
-            out = self.model.activations(train_dataset[1][0].view(1, 1, self.image_size, self.image_size))
+            out = self.model.activations(self.prepare_sample_for_activation(train_dataset[1][0], self.dataset_name))
+
             self.ensure_folder_exists(f'{self.folder_path}/{today}/TrainingResults/activations')
             # Plot the outputs after the first CNN
             plot_activations(out[0], number_rows=4, name="Output after the 1st CNN", path=f'{self.folder_path}/{today}/TrainingResults/activations/img1firstCnn.jpg')
@@ -207,9 +242,9 @@ class CnnTrainer:
 
             # Show the third image
 
-            show_data(train_dataset[2], self.image_size)
+            show_data(train_dataset[2], self.image_size, self.dataset_name)
             # Use the CNN activations class to see the steps
-            out = self.model.activations(train_dataset[2][0].view(1, 1, self.image_size, self.image_size))
+            out = self.model.activations(self.prepare_sample_for_activation(train_dataset[15][0], self.dataset_name))
             # Plot the outputs after the first CNN
             plot_activations(out[0], number_rows=4, name="Output after the 1st CNN", path=f'{self.folder_path}/{today}/TrainingResults/activations/img2firstCnn.jpg')
             # Plot the outputs after the first Relu
@@ -230,7 +265,7 @@ class CnnTrainer:
                 z = self.model(x)
                 _, yhat = torch.max(z, 1)
                 if yhat != y:
-                    show_data((x, y), self.image_size)
+                    show_data((x, y), self.image_size, self.dataset_name)
                     plt.show()
                     print("yhat: ",yhat)
                     count += 1
@@ -255,6 +290,11 @@ class CnnTrainer:
             print(f"--path not provided. Defaulting to {self.default_path}")
             self.base_path = self.default_path
 
+        self.dataset_path = args.dataset_path
+        if self.dataset_path is None:
+            print(f"--dataset_path not provided. Defaulting to {self.base_path}")
+            self.dataset_path = self.base_path
+
 
         self.iterate = False if args.iterate in ['false', 'False', ''] else bool(args.iterate)
         if self.iterate == True:
@@ -278,12 +318,28 @@ class CnnTrainer:
         if self.iterate == True:
             self.model_name = f"small_cnn_{self.first_kernel}x{self.second_kernel}"
             print(self.model_name)
-            if self.dataset_name == 'mnist64':
-                model = Small_CNN_Generic_im64(self.first_kernel, self.second_kernel)
-            if self.dataset_name == 'mnist128':
-                model = Small_CNN_Generic_im128(self.first_kernel, self.second_kernel)
-            else:
-                model = Small_CNN_Generic(self.first_kernel, self.second_kernel)
+            print(self.dataset_name)
+            match self.dataset_name:
+                case 'mnist':
+                    model = Small_CNN_Generic(self.first_kernel, self.second_kernel)
+                case 'mnist32':
+                    model = Small_CNN_Generic_im32(self.first_kernel, self.second_kernel)
+                case 'mnist64':
+                    model = Small_CNN_Generic_im64(self.first_kernel, self.second_kernel)
+                case 'mnist128':
+                    model = Small_CNN_Generic_im128(self.first_kernel, self.second_kernel)
+                case 'mnist256':
+                    model = Small_CNN_Generic_im256(self.first_kernel, self.second_kernel)
+                case 'cifar10':
+                    model = Small_CNN_Generic_Cifar(self.first_kernel, self.second_kernel, 32)
+                case 'cifar10_64':
+                    model = Small_CNN_Generic_Cifar(self.first_kernel, self.second_kernel, 64)
+                case 'cifar10_128':
+                    model = Small_CNN_Generic_Cifar(self.first_kernel, self.second_kernel, 128)
+                case 'cifar10_256':
+                    model = Small_CNN_Generic_Cifar(self.first_kernel, self.second_kernel, 256)
+                case _:
+                    raise Exception(f'Generic model for {self.dataset_name} not found')
             return model
 
         match model_name:
@@ -335,91 +391,80 @@ class CnnTrainer:
                 download = False
                 if not Path(f"{self.base_path}/Datasets/MNIST").exists():
                     download = True
-                train_dataset = dsets.MNIST(f"{self.base_path}/Datasets/MNIST", train=True, transform=composed, download=download)
-                validation_dataset = dsets.MNIST(root=f'{self.base_path}/Datasets/MNIST', train=False, transform=composed, download=download)
-            case 'mnist64':
-                train_dataset = CustomImageDataset(f"{self.default_path}/Datasets/scaled_64/labels/train.csv", f"{self.default_path}/Datasets/scaled_64/train", transform=composed)
-                validation_dataset = CustomImageDataset(f"{self.default_path}/Datasets/scaled_64/labels/validation.csv", f"{self.default_path}/Datasets/scaled_64/validation", transform=composed)
-            case 'mnist128':
-                train_dataset = CustomImageDataset(f"{self.default_path}/Datasets/scaled_128/labels/train.csv", f"{self.default_path}/Datasets/scaled_128/train", transform=composed)
-                validation_dataset = CustomImageDataset(f"{self.default_path}/Datasets/scaled_128/labels/validation.csv", f"{self.default_path}/Datasets/scaled_128/validation", transform=composed)
+                train_dataset = dsets.MNIST(self.dataset_path, train=True, transform=composed, download=download)
+                validation_dataset = dsets.MNIST(root=self.dataset_path, train=False, transform=composed, download=download)
+            case 'mnist32' | 'mnist64' | 'mnist128' | 'mnist256' | 'cifar10_64' | 'cifar10_128' | 'cifar10_256':
+                train_dataset = CustomImageDataset(f"{self.dataset_path}/labels/train.csv", f"{self.dataset_path}/train", transform=composed)
+                validation_dataset = CustomImageDataset(f"{self.dataset_path}/labels/validation.csv", f"{self.dataset_path}/validation", transform=composed)
             case 'cifar100':
                 download = False
-                if not Path(f"{self.base_path}/Datasets/CIFAR100_train").exists():
+                if not Path(f"{self.dataset_path}/CIFAR100_train").exists():
                     download = True
-                train_dataset = dsets.CIFAR100(root=f"{self.base_path}/Datasets/CIFAR100_train", train=True, download=download, transform=composed)
-                validation_dataset = dsets.CIFAR100(root=f"{self.base_path}/Datasets/CIFAR100_valid", train=False, download=download, transform=composed)
+                train_dataset = dsets.CIFAR100(root=f"{self.dataset_path}/CIFAR100_train", train=True, download=download, transform=composed)
+                validation_dataset = dsets.CIFAR100(root=f"{self.dataset_path}/CIFAR100_valid", train=False, download=download, transform=composed)
             case 'cifar10':
                 download = False
-                if not Path(f"{self.base_path}/Datasets/CIFAR10_train").exists():
+                if not Path(f"{self.dataset_path}/CIFAR10_train").exists():
                     download = True
-                train_dataset = dsets.CIFAR10(root=f"{self.base_path}/Datasets/CIFAR10_train", train=True, download=download, transform=composed)
-                validation_dataset = dsets.CIFAR10(root=f"{self.base_path}/Datasets/CIFAR10_valid", train=False, download=download, transform=composed)
+                train_dataset = dsets.CIFAR10(root=f"{self.dataset_path}/CIFAR10_train", train=True, download=download, transform=composed)
+                validation_dataset = dsets.CIFAR10(root=f"{self.dataset_path}/CIFAR10_valid", train=False, download=download, transform=composed)
             case _:
-                raise Exception("--dataset must be cifar100, cifar10 or mnist")
+                raise Exception(f"Could not fetch dataset. --dataset must be one of {ALLOWED_DATASETS}")
         return train_dataset, validation_dataset
     
     def get_image_size(self, dataset_name):
-        match dataset_name:
-            case 'mnist':
-                image_size = MNIST_IMAGE_SIZE
-            case 'mnist64':
-                image_size = MNIST64_IMAGE_SIZE
-            case 'mnist128':
-                image_size = MNIST128_IMAGE_SIZE
-            case 'cifar100':
-                image_size = CIFAR_IMAGE_SIZE
-            case 'cifar10':
-                image_size = CIFAR_IMAGE_SIZE
-            case _:
-                raise Exception(f"--dataset must be one of {ALLOWED_DATASETS}. Got {dataset_name}")
+        if dataset_name in IMAGE_SIZES:
+            image_size = IMAGE_SIZES[dataset_name]
+        else:
+            raise Exception(f"--dataset must be one of {ALLOWED_DATASETS}. Got {dataset_name}")
         return image_size
 
 
     # Model Training Function
-    def train_model(self, n_epochs):
-        # Loops for each epoch
-        for epoch in range(n_epochs):
-            print(f'Training epoch {epoch + 1}/{n_epochs}')
-            # Keeps track of cost for each epoch
-            cost=0
-            total_processed = 0
-            # For each batch in train loader
-            for x, y in self.train_loader:
-                # Resets the calculated gradient value, this must be done each time as it accumulates if we do not reset
-                self.optimizer.zero_grad()
-                # Makes a prediction based on X value
-                z = self.model(x)
-                # Measures the loss between prediction and actual Y value
-                loss = self.criterion(z, y)
-                # Calculates the gradient value with respect to each weight and bias
-                loss.backward()
-                # Updates the weight and bias according to calculated gradient value
-                self.optimizer.step()
-                # Cumulates loss 
-                cost+=loss.data
+    def train_model(self, epoch, n_epochs):
+        # Keeps track of cost for each epoch
+        cost=0
+        total_processed = 0
+        # For each batch in train loader
+        for x, y in self.train_loader:
+            # Move data to cuda if GPU available and keep on CPU otherwise
+            x = x.to(self.device)
+            y = y.to(self.device)
+            # Resets the calculated gradient value, this must be done each time as it accumulates if we do not reset
+            self.optimizer.zero_grad()
+            # Makes a prediction based on X value
+            y_hat = self.model(x)
+            # Measures the loss between prediction and actual Y value
+            loss = self.criterion(y_hat, y)
+            # Calculates the gradient value with respect to each weight and bias
+            loss.backward()
+            # Updates the weight and bias according to calculated gradient value
+            self.optimizer.step()
+            # Cumulates loss 
+            cost+=torch.Tensor.cpu(loss.data)
 
-                total_processed += len(y)
-                print(f'({self.dataset_name},{self.model_name}) Epoch {epoch + 1}/{n_epochs}. Trained on images {total_processed}/{self.N_train}')
+            total_processed += len(y)
+            print(f'({self.dataset_name},{self.model_name}) Epoch {epoch + 1}/{n_epochs}. Trained on images {total_processed}/{self.N_train}')
             
-            # Saves cost of training data of epoch
-            self.cost_list.append(cost)
-            # Keeps track of correct predictions
-            accuracy = self.calculate_accuracy()
-            self.accuracy_list.append(accuracy)
+        # Saves cost of training data of epoch
+        self.cost_list.append(cost)
+            
 
     def calculate_accuracy(self):
         correct=0
-            # Perform a prediction on the validation  data  
+        # Perform a prediction on the validation  data  
         for x_test, y_test in self.validation_loader:
-                # Makes a prediction
+            # Move data to cuda if GPU available and keep on CPU otherwise
+            x_test = x_test.to(self.device)
+            y_test = y_test.to(self.device)
+            # Makes a prediction
             z = self.model(x_test)
-                # The class with the max value is the one we are predicting
+            # The class with the max value is the one we are predicting
             _, yhat = torch.max(z.data, 1)
-                # Checks if the prediction matches the actual value
+            # Checks if the prediction matches the actual value
             correct += (yhat == y_test).sum().item()
             
-            # Calcualtes accuracy and saves it
+        # Calcualtes accuracy and saves it
         accuracy = correct / self.N_validation
         return accuracy
 
@@ -431,3 +476,11 @@ class CnnTrainer:
     
     def ensure_folder_exists(self, folder_path):
         Path(folder_path).mkdir(parents=True, exist_ok=True)
+
+    def prepare_sample_for_activation(self, sample, dataset_name: str):
+        if dataset_name.startswith('mnist'):
+            sample = sample.view(1, 1, self.image_size, self.image_size).to(self.device)
+            return sample
+        if dataset_name.startswith('cifar'):
+            sample = sample.view(1, 3, self.image_size, self.image_size).to(self.device)
+            return sample

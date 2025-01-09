@@ -14,6 +14,7 @@ import argparse
 
 class CnnData:
     time = 0
+    time_per_sample = None
     accuracy = 0
     name = ''
     path = ''
@@ -38,36 +39,32 @@ def get_color2(name):
     r = 0.6
     g = (int(first_layer) * 15) / 256
     b = 0.6
-    print(r, g, b)
     return (r, g, b)
 
 def get_color_by_acc(accuracy, min_accuracy, max_accuracy):
     r = 0 if accuracy == max_accuracy else 0.5
     g = interp(accuracy, [min_accuracy, max_accuracy], [0, 1])
     b = interp(accuracy, [min_accuracy, max_accuracy], [0, 1])
-    print(accuracy)
-    print(r, g, b)
     return (r, g, b)
 
 def plot_dots(cnn_datas, min_accuracy, max_accuracy):
     fig, ax1 = plt.subplots()
     color = 'tab:red'
+    modern_perf = all(cnn_data.time_per_sample is not None for cnn_data in cnn_datas)
     for cnn_data in cnn_datas:
-        ax1.plot(cnn_data.time, cnn_data.accuracy, label=cnn_data.name, color=get_color_by_acc(cnn_data.accuracy, min_accuracy, max_accuracy), marker='*')
+        ax1.plot(cnn_data.time_per_sample * 1000 if modern_perf else cnn_data.time, cnn_data.accuracy * 100, label=cnn_data.name, color=get_color_by_acc(cnn_data.accuracy, min_accuracy, max_accuracy), marker='*')
 
-    ax1.set_xlabel('Time', color=color)
-    ax1.set_ylabel('Accuracy', color=color)
+    ax1.set_xlabel(f'Time {'(ms)' if modern_perf else ''}', color=color)
+    ax1.set_ylabel('Accuracy (%)', color=color)
     ax1.tick_params(axis='y', color=color)
     return fig
 
 def plot_lines(cnn_datas, group_layer):
     cnn_datas = list(cnn_datas)
     if group_layer == 1:
-        print("Group layer 1")
         sort_key=lambda cnn_data: (cnn_data.first_layer, cnn_data.second_layer)
         group_key=lambda cnn_data: cnn_data.first_layer
     else:
-        print("Group layer 2")
         sort_key=lambda cnn_data: (cnn_data.second_layer, cnn_data.first_layer)
         group_key=lambda cnn_data: cnn_data.second_layer
 
@@ -79,7 +76,6 @@ def plot_lines(cnn_datas, group_layer):
     y = []
     for layer, group in grouped:
         groupList = list(group)
-        print(f"{layer},")
         for g in groupList:
             x.append(g.time)
             y.append(g.accuracy)
@@ -119,7 +115,7 @@ if args.group_layer is not None and args.group_layer != '' and args.group_layer.
 else:
     print('Grouping layer not set')
 
-cnn_directories = filter(lambda x: (not x.match('Datasets') and not x.match('small_cnn_2x.*')),  path.iterdir()) 
+cnn_directories = filter(lambda x: (not x.match('Datasets') and not x.match('small_cnn_2x.*') and x.is_dir()),  path.iterdir()) 
 for cnn_directory in cnn_directories:
     cnn_data = CnnData()
     cnn_data.name = os.path.basename(cnn_directory)
@@ -127,10 +123,20 @@ for cnn_directory in cnn_directories:
     cnn_iterations = list(filter(lambda x: (x.match('latest')),  cnn_directory.iterdir()))
     cnn_iterations_count = len(cnn_iterations)
     for cnn_iteration in cnn_iterations:
-        loaded_time = torch.load(cnn_iteration.joinpath('performance.pt'))
-        loaded_accuracy = torch.load(cnn_iteration.joinpath('accuracy.pt'))
-        cnn_data.accuracy = loaded_accuracy[-1]
+        try:
+            loaded_time = torch.load(cnn_iteration.joinpath('performance.pt'), weights_only=True)
+        except:
+            print(f"{cnn_data.name} doesn't have time performance")
+            loaded_time = None
+        try:
+            loaded_time_per_sample = torch.load(cnn_iteration.joinpath('time_per_sample.pt'), weights_only=True)
+        except:
+            print(f"{cnn_data.name} doesn't have time per sample")
+            loaded_time_per_sample = None
+        loaded_accuracy = torch.load(cnn_iteration.joinpath('accuracy.pt'),  weights_only=True)
+        cnn_data.accuracy = loaded_accuracy[-1] # Take latest accuracy. This is model accuracy after last epoch -> best accuracy
         cnn_data.time = loaded_time
+        cnn_data.time_per_sample = loaded_time_per_sample
         dimension = cnn_data.name[len("small_cnn_"):]
         cnn_data.first_layer = int(dimension[:dimension.index('x')])
         cnn_data.second_layer = int(dimension[dimension.index('x') + 1:])
@@ -149,15 +155,19 @@ print(f"Accuracy range: {min_accuracy} - {max_accuracy}")
 
 if group_layer is not None:
     fig = plot_lines(cnn_datas, group_layer)
+    fig_name = os.path.basename(path) + ' grouped by layer ' + str(group_layer)
 else:
     fig = plot_dots(cnn_datas, min_accuracy, max_accuracy)
+    fig_name = os.path.basename(path)
                 
 fig.tight_layout()
+fig.canvas.manager.set_window_title(fig_name)
 
 print('Plotted accuracy results')
 
 plt.legend()
 plt.grid()
+
 
 if args.mode == 'show':
     plt.show()
