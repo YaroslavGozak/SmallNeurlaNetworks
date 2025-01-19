@@ -340,7 +340,7 @@ class CnnTrainer:
                 case 'mnist_scaled_256':
                     model = Small_CNN_Generic(self.first_kernel, self.second_kernel, channels=[1, 16, 32], image_resolution=256)
                 case 'cifar10':
-                    model = Small_CNN_Generic(self.first_kernel, self.sec ond_kernel, channels=[3, 16, 32], image_resolution=32, stride=self.stride, dilation=self.dilation)
+                    model = Small_CNN_Generic(self.first_kernel, self.second_kernel, channels=[3, 16, 32], image_resolution=32, stride=self.stride, dilation=self.dilation)
                 case 'cifar10_scaled_64':
                     model = Small_CNN_Generic(self.first_kernel, self.second_kernel, channels=[3, 16, 32], image_resolution=64, stride=self.stride, dilation=self.dilation)
                 case 'cifar10_scaled_128':
