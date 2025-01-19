@@ -6,25 +6,27 @@ import torch.nn as nn
 class Small_CNN_Generic(nn.Module):
     
     # Contructor
-    def __init__(self, first_layer_kernel_size, second_layer_kernel_size):
+    def __init__(self, first_layer_kernel_size, second_layer_kernel_size, channels, image_resolution: int, dilation: int = 1, stride: int = 1):
         super(Small_CNN_Generic, self).__init__()
         # The reason we start with 1 channel is because we have a single black and white image
         padding = int(first_layer_kernel_size / 2)
-        # Channel Width after this layer is 16
-        self.cnn1 = nn.Conv2d(in_channels=1, out_channels=16, kernel_size=first_layer_kernel_size, stride=1, padding=padding)
+        # Channel Width after this layer is 32
+        print(f'Dilation: {dilation}')
+        self.cnn1 = nn.Conv2d(in_channels=channels[0], out_channels=channels[1], kernel_size=first_layer_kernel_size, stride=1, padding=padding, dilation=dilation)
         self.relu1 = nn.ReLU(inplace=True)
-        # Channel Wifth after this layer is 8
+        # Channel Wifth after this layer is 16
         self.maxpool1=nn.MaxPool2d(kernel_size=2)
         
         padding = int(second_layer_kernel_size / 2)
-        # Channel Width after this layer is 8
-        self.cnn2 = nn.Conv2d(in_channels=16, out_channels=32, kernel_size=second_layer_kernel_size, stride=1, padding=padding)
+        # Channel Width after this layer is 16
+        self.cnn2 = nn.Conv2d(in_channels=channels[1], out_channels=channels[2], kernel_size=second_layer_kernel_size, stride=1, padding=padding)
         self.relu2 = nn.ReLU(inplace=True)
-        # Channel Width after this layer is 4
+        # Channel Width after this layer is 8
         self.maxpool2=nn.MaxPool2d(kernel_size=2)
         # In total we have 32 channels which are each 4 * 4 in size based on the width calculation above. Channels are squares.
         # The output is a value for each class
-        self.fc1 = nn.Linear(32 * 4 * 4, 10)
+        final_layer_resolution = int(image_resolution / 4)
+        self.fc1 = nn.Linear(channels[2] * final_layer_resolution * final_layer_resolution, 10)
     
     # Prediction
     def forward(self, x):

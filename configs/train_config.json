@@ -1,0 +1,52 @@
+{
+    "configs" : [
+        {
+            "path" : "H:\\Projects\\University\\NeauralNetworks\\train_2025_01_17",
+            "dataset": "cifar10",
+            "dataset_path": "H:\\Projects\\University\\NeauralNetworks\\Datasets",
+            "first_layers": "3,5,7,9,11",
+            "second_layers": "3,5,7,9,11",
+            "iterate": true,
+            "epochs": 10,
+            "compute": "gpu",
+            "stride": 1,
+            "dilation": 1
+        },
+        {
+            "path" : "H:\\Projects\\University\\NeauralNetworks\\train_2025_01_17",
+            "dataset": "cifar10_scaled_64",
+            "dataset_path": "H:\\Projects\\University\\NeauralNetworks\\Datasets",
+            "first_layers": "3,5,7,9,11",
+            "second_layers": "3,5,7,9,11",
+            "iterate": true,
+            "epochs": 10,
+            "compute": "gpu",
+            "stride": 1,
+            "dilation": 1
+        },
+        {
+            "path" : "H:\\Projects\\University\\NeauralNetworks\\train_2025_01_17",
+            "dataset": "cifar10_scaled_128",
+            "dataset_path": "H:\\Projects\\University\\NeauralNetworks\\Datasets",
+            "first_layers": "3,5,7,9,11",
+            "second_layers": "3,5,7,9,11",
+            "iterate": true,
+            "epochs": 10,
+            "compute": "gpu",
+            "stride": 1,
+            "dilation": 1
+        },
+        {
+            "path" : "H:\\Projects\\University\\NeauralNetworks\\train_2025_01_17",
+            "dataset": "cifar10_scaled_256",
+            "dataset_path": "H:\\Projects\\University\\NeauralNetworks\\Datasets",
+            "first_layers": "3,5,7,9,11",
+            "second_layers": "3,5,7,9,11",
+            "iterate": true,
+            "epochs": 10,
+            "compute": "gpu",
+            "stride": 1,
+            "dilation": 1
+        }
+    ]
+}

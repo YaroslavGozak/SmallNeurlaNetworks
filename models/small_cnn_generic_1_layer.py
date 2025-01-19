@@ -3,28 +3,24 @@ import torch
 # PyTorch Neural Network
 import torch.nn as nn
 
-class Small_CNN_3x3im64(nn.Module):
+class Small_CNN_Generic_1_layer(nn.Module):
     
     # Contructor
-    def __init__(self):
-        super(Small_CNN_3x3im64, self).__init__()
+    def __init__(self, first_layer_kernel_size, channels, image_resolution: int, dilation: int = 1):
+        super(Small_CNN_Generic_1_layer, self).__init__()
         # The reason we start with 1 channel is because we have a single black and white image
-        # Channel Width after this layer is 64
-        self.cnn1 = nn.Conv2d(in_channels=1, out_channels=16, kernel_size=3, stride=1, padding=1)
+        padding = int(first_layer_kernel_size / 2)
+        # Channel Width after this layer is 32
+        print(f'Dilation: {dilation}')
+        self.cnn1 = nn.Conv2d(in_channels=channels[0], out_channels=channels[1], kernel_size=first_layer_kernel_size, stride=1, padding=padding, dilation=dilation)
         self.relu1 = nn.ReLU(inplace=True)
-        
-        # Channel Wifth after this layer is 32
+        # Channel Wifth after this layer is 16
         self.maxpool1=nn.MaxPool2d(kernel_size=2)
         
-        # Channel Width after this layer is 32
-        self.cnn2 = nn.Conv2d(in_channels=16, out_channels=32, kernel_size=3, stride=1, padding=1)
-        self.relu2 = nn.ReLU(inplace=True)
-        
-        # Channel Width after this layer is 16
-        self.maxpool2=nn.MaxPool2d(kernel_size=2)
         # In total we have 32 channels which are each 4 * 4 in size based on the width calculation above. Channels are squares.
         # The output is a value for each class
-        self.fc1 = nn.Linear(32 * 16 * 16, 10)
+        final_layer_resolution = int(image_resolution / 2)
+        self.fc1 = nn.Linear(channels[1] * final_layer_resolution * final_layer_resolution, 10)
     
     # Prediction
     def forward(self, x):
@@ -32,9 +28,6 @@ class Small_CNN_3x3im64(nn.Module):
         x = self.cnn1(x)
         x = self.relu1(x)
         x = self.maxpool1(x)
-        x = self.cnn2(x)
-        x = self.relu2(x)
-        x = self.maxpool2(x)
         x = x.view(x.size(0), -1)
         x = self.fc1(x)
         return x
@@ -46,8 +39,5 @@ class Small_CNN_3x3im64(nn.Module):
         a1 = self.relu1(z1)
         out1 = self.maxpool1(a1)
         
-        z2 = self.cnn2(out1)
-        a2 = self.relu2(z2)
-        out2 = self.maxpool2(a2)
-        out = out2.view(out2.size(0),-1)
-        return z1, a1, z2, a2, out1, out2, out
+        out = out1.view(out1.size(0),-1)
+        return z1, a1, out1, out

@@ -1,5 +1,7 @@
 from datetime import datetime
 import time
+
+import numpy as np
 from constants import ALLOWED_DATASETS, IMAGE_SIZES
 from custom_image_dataset import CustomImageDataset
 from models.alexnet import AlexNet
@@ -7,8 +9,6 @@ from models.alexnet_32 import AlexNet32
 from drawing import plot_activations, plot_channels, show_data
 
 # PyTorch Library
-from models.small_cnn_3x3im64 import Small_CNN_3x3im64
-from models.small_cnn_7x7x5 import Small_CNN_7x7x5
 from models.small_cnn_generic import Small_CNN_Generic
 import torch
 # Allows us to transform data
@@ -22,39 +22,23 @@ import matplotlib.pylab as plt
 
 from pathlib import Path
 
-from models.small_cnn_11x11 import Small_CNN_11x11
-from models.small_cnn_11x11x3 import Small_CNN_11x11x3
-from models.small_cnn_11x11x5 import Small_CNN_11x11x5
-from models.small_cnn_1x3 import Small_CNN_1x3
-from models.small_cnn_2x2 import Small_CNN_2x2
-from models.small_cnn_2x2_32_channels import Small_CNN_2x2_32_channels
-from models.small_cnn_2x2_dilation import Small_CNN_2x2_dilation
-from models.small_cnn_3x1 import Small_CNN_3x1
-from models.small_cnn_3x1_same import Small_CNN_3x1_same
-from models.small_cnn_3x3 import Small_CNN_3x3
-from models.small_cnn_5x5 import Small_CNN_5x5
-from models.small_cnn_5x5_dilation import Small_CNN_5x5_dilation
-from models.small_cnn_7x7 import Small_CNN_7x7
-from models.small_cnn_9x9x5 import Small_CNN_9x9x5
-from models.small_cnn_9x9 import Small_CNN_9x9
-from models.small_cnn_generic_cifar import Small_CNN_Generic_Cifar
-from models.small_cnn_generic_cifar_im128 import Small_CNN_Generic_Cifar_im128
-from models.small_cnn_generic_im128 import Small_CNN_Generic_im128
-from models.small_cnn_generic_im256 import Small_CNN_Generic_im256
-from models.small_cnn_generic_im32 import Small_CNN_Generic_im32
-from models.small_cnn_generic_im64 import Small_CNN_Generic_im64
+from models.small_cnn_generic_1_layer import Small_CNN_Generic_1_layer
+from models.small_cnn_generic_cifar_32_64_channels import Small_CNN_Generic_Cifar_32_64_channels
+from models.small_cnn_generic_cifar_32_channels import Small_CNN_Generic_Cifar_32_channels
+from models.small_cnn_generic_dilation import Small_CNN_Generic_dilation
+from models.small_cnn_generic_strided import Small_CNN_Generic_strided
 
 class CnnTrainer:
 
     def __init__(self):
         self.data = []
 
-    default_path = "H:/Projects/University/NeauralNetworks"
+    default_base_path = "H:/Projects/University/NeauralNetworks"
     base_path = ""
     model_name = ""
     mode = ""
     plot_misclassified_samples = False
-    plot_channels_activations = True
+    plot_channels_activations = False
     allowed_modes = ['test', 'train', 'performance']
     
     iterate = False
@@ -62,19 +46,16 @@ class CnnTrainer:
     second_kernel = None
 
     def process(self, args):
-
-        print("Starting program...")
+        
+        self.extract_args(args)
 
         if torch.cuda.is_available():
             print(f"GPU: {torch.cuda.get_device_name(0)} is available.")
         else:
             print("No GPU available. Training will run on CPU.")
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        print(self.device)
+        self.device = torch.device("cuda" if torch.cuda.is_available() and self.compute == 'gpu' else "cpu")
 
         today = datetime.today().strftime('%Y-%m-%d_%H.%M.%S')
-
-        self.extract_args(args)
 
         self.image_size = self.get_image_size(self.dataset_name)
         # First the image is resized then converted to a tensor
@@ -110,9 +91,9 @@ class CnnTrainer:
             # Create an optimizer that updates model parameters using the learning rate and gradient
             self.optimizer = torch.optim.SGD(self.model.parameters(), lr = learning_rate)
             # Create a Data Loader for the training data with a batch size of 256 
-            self.train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=256)
+            self.train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=64)
             # Create a Data Loader for the validation data with a batch size of 5000 
-            self.validation_loader = torch.utils.data.DataLoader(dataset=validation_dataset, batch_size=256)
+            self.validation_loader = torch.utils.data.DataLoader(dataset=validation_dataset, batch_size=64)
 
 
             print("Training model...")
@@ -137,8 +118,8 @@ class CnnTrainer:
                 validation_end = time.time()
                 elapsed_time_total = validation_end - validation_start
                 # Calculate average evaluation time
-                time_per_sample = elapsed_time_total / self.N_validation
-                self.performance_list.append(time_per_sample)
+                time_per_sample_ms = (elapsed_time_total / self.N_validation) * 1000
+                self.performance_list.append(time_per_sample_ms)
             end = time.time()
             elapsed_time = round(end - start, 1)
             print(f'Elapsed time: {elapsed_time} secs')
@@ -205,12 +186,12 @@ class CnnTrainer:
                 validation_end = time.time()
                 elapsed_time_total = validation_end - validation_start
                 # Calculate average evaluation time
-                time_per_sample = elapsed_time_total / self.N_validation
-                print(f'Time per sample: {time_per_sample * 1000} millisecs')
+                time_per_sample_ms = (elapsed_time_total / self.N_validation) * 1000
+                print(f'Time per sample: {time_per_sample_ms} millisecs')
                 print(f'Accuracy: {accuracy}')
                 # torch.save(time_per_sample, f'{save_path}/time_per_sample.pt')
                 # torch.save([accuracy], f'{save_path}/accuracy.pt')
-                return self.model_name, self.dataset_name, accuracy, time_per_sample
+                return self.model_name, self.dataset_name, accuracy, time_per_sample_ms
         
 
         if self.plot_channels_activations:
@@ -273,6 +254,7 @@ class CnnTrainer:
                     break  
 
         print('Done')
+        return self.model_name, self.dataset_name, self.accuracy_list[-1], np.average(self.performance_list)
 
     def extract_args(self, args):
         print(args.mode)
@@ -284,17 +266,44 @@ class CnnTrainer:
         if self.dataset_name not in ALLOWED_DATASETS:
             raise Exception(f'--dataset must be one of {ALLOWED_DATASETS}')
         print(f'Dataset: {self.dataset_name}')
+
+        self.dilation = args.dilation
+        if self.dilation is None:
+            self.dilation = 1
+            print(f"--dilation not provided. Defaulting to {self.dilation}")
+        else:
+            self.dilation = int(self.dilation)
+            print(f'Dilation set to {self.dilation}')
+
+        self.stride = args.stride
+        if self.stride is None:
+            self.stride = 1
+            print(f"--stride not provided. Defaulting to {self.stride}")
+        else:
+            self.stride = int(self.stride)
+            print(f'stride set to {self.stride}')
         
         self.base_path = args.path
         if self.base_path is None:
-            print(f"--path not provided. Defaulting to {self.default_path}")
-            self.base_path = self.default_path
+            default_path = self.default_base_path + '/default'
+            print(f"--path not provided. Defaulting to {default_path}")
+            self.base_path = default_path
+        self.base_path = self.base_path + '_' + self.dataset_name + (f'_dilation{self.dilation}' if self.dilation > 1 else '') + (f'_stride{self.stride}' if self.stride > 1 else '')
 
         self.dataset_path = args.dataset_path
         if self.dataset_path is None:
+            dataset_path = self.default_base_path + '/Datasets'
             print(f"--dataset_path not provided. Defaulting to {self.base_path}")
-            self.dataset_path = self.base_path
+            self.dataset_path = dataset_path
+        self.dataset_path = self.dataset_path + "/" + self.dataset_name
+        print(f'Dataset path: {self.dataset_path}')
 
+        self.compute = args.compute
+        if self.compute is None:
+            self.compute = 'gpu'
+            print(f"--compute not provided. Defaulting to {self.compute}")
+        else:
+            print(f'Compute mode set to {self.compute}. Will try to use it if systems supports this option')
 
         self.iterate = False if args.iterate in ['false', 'False', ''] else bool(args.iterate)
         if self.iterate == True:
@@ -321,62 +330,28 @@ class CnnTrainer:
             print(self.dataset_name)
             match self.dataset_name:
                 case 'mnist':
-                    model = Small_CNN_Generic(self.first_kernel, self.second_kernel)
-                case 'mnist32':
-                    model = Small_CNN_Generic_im32(self.first_kernel, self.second_kernel)
-                case 'mnist64':
-                    model = Small_CNN_Generic_im64(self.first_kernel, self.second_kernel)
-                case 'mnist128':
-                    model = Small_CNN_Generic_im128(self.first_kernel, self.second_kernel)
-                case 'mnist256':
-                    model = Small_CNN_Generic_im256(self.first_kernel, self.second_kernel)
+                    model = Small_CNN_Generic_1_layer(self.first_kernel, channels=[1, 16, 32], image_resolution=16)
+                case 'mnist_scaled_32':
+                    model = Small_CNN_Generic(self.first_kernel, self.second_kernel, channels=[1, 16, 32], image_resolution=32)
+                case 'mnist_scaled_64':
+                    model = Small_CNN_Generic(self.first_kernel, self.second_kernel, channels=[1, 16, 32], image_resolution=64)
+                case 'mnist_scaled_128':
+                    model = Small_CNN_Generic(self.first_kernel, self.second_kernel, channels=[1, 16, 32], image_resolution=128)
+                case 'mnist_scaled_256':
+                    model = Small_CNN_Generic(self.first_kernel, self.second_kernel, channels=[1, 16, 32], image_resolution=256)
                 case 'cifar10':
-                    model = Small_CNN_Generic_Cifar(self.first_kernel, self.second_kernel, 32)
-                case 'cifar10_64':
-                    model = Small_CNN_Generic_Cifar(self.first_kernel, self.second_kernel, 64)
-                case 'cifar10_128':
-                    model = Small_CNN_Generic_Cifar(self.first_kernel, self.second_kernel, 128)
-                case 'cifar10_256':
-                    model = Small_CNN_Generic_Cifar(self.first_kernel, self.second_kernel, 256)
+                    model = Small_CNN_Generic(self.first_kernel, self.sec ond_kernel, channels=[3, 16, 32], image_resolution=32, stride=self.stride, dilation=self.dilation)
+                case 'cifar10_scaled_64':
+                    model = Small_CNN_Generic(self.first_kernel, self.second_kernel, channels=[3, 16, 32], image_resolution=64, stride=self.stride, dilation=self.dilation)
+                case 'cifar10_scaled_128':
+                    model = Small_CNN_Generic(self.first_kernel, self.second_kernel, channels=[3, 16, 32], image_resolution=128, stride=self.stride, dilation=self.dilation)
+                case 'cifar10_scaled_256':
+                    model = Small_CNN_Generic(self.first_kernel, self.second_kernel, channels=[3, 16, 32], image_resolution=256, stride=self.stride, dilation=self.dilation)
                 case _:
                     raise Exception(f'Generic model for {self.dataset_name} not found')
             return model
 
         match model_name:
-            case "small_cnn_11x11":
-                model = Small_CNN_11x11()
-            case "small_cnn_11x11x3":
-                model = Small_CNN_11x11x3()
-            case "small_cnn_11x11x5":
-                model = Small_CNN_11x11x5()
-            case "small_cnn_9x9":
-                model = Small_CNN_9x9()
-            case "small_cnn_9x9x5":
-                model = Small_CNN_9x9x5()
-            case "small_cnn_7x7":
-                model = Small_CNN_7x7()
-            case "small_cnn_7x7x5":
-                model = Small_CNN_7x7x5()
-            case "small_cnn_5x5":
-                model = Small_CNN_5x5()
-            case "small_cnn_5x5_dilation":
-                model = Small_CNN_5x5_dilation()
-            case "small_cnn_3x3":
-                model = Small_CNN_3x3()
-            case "small_cnn_3x3im64":
-                model = Small_CNN_3x3im64()
-            case "small_cnn_3x1":
-                model = Small_CNN_3x1()
-            case "small_cnn_3x1_same":
-                model = Small_CNN_3x1_same()
-            case "small_cnn_1x3":
-                model = Small_CNN_1x3()
-            case "small_cnn_2x2":
-                model = Small_CNN_2x2()
-            case "small_cnn_2x2_32":
-                model = Small_CNN_2x2_32_channels()
-            case "small_cnn_2x2_dilation":
-                model = Small_CNN_2x2_dilation()
             case "alexnet32":
                 model = AlexNet32(num_classes=10, dropout=0.5)
             case "alexnet":
@@ -393,7 +368,7 @@ class CnnTrainer:
                     download = True
                 train_dataset = dsets.MNIST(self.dataset_path, train=True, transform=composed, download=download)
                 validation_dataset = dsets.MNIST(root=self.dataset_path, train=False, transform=composed, download=download)
-            case 'mnist32' | 'mnist64' | 'mnist128' | 'mnist256' | 'cifar10_64' | 'cifar10_128' | 'cifar10_256':
+            case 'mnist_scaled_32' | 'mnist_scaled_64' | 'mnist_scaled_128' | 'mnist_scaled_256' | 'cifar10_scaled_64' | 'cifar10_scaled_128' | 'cifar10_scaled_256':
                 train_dataset = CustomImageDataset(f"{self.dataset_path}/labels/train.csv", f"{self.dataset_path}/train", transform=composed)
                 validation_dataset = CustomImageDataset(f"{self.dataset_path}/labels/validation.csv", f"{self.dataset_path}/validation", transform=composed)
             case 'cifar100':
@@ -408,6 +383,12 @@ class CnnTrainer:
                     download = True
                 train_dataset = dsets.CIFAR10(root=f"{self.dataset_path}/CIFAR10_train", train=True, download=download, transform=composed)
                 validation_dataset = dsets.CIFAR10(root=f"{self.dataset_path}/CIFAR10_valid", train=False, download=download, transform=composed)
+            case 'caltech101':
+                download = False
+                if not Path(f"{self.dataset_path}/CALTECH101_train").exists():
+                    download = True
+                train_dataset = dsets.Caltech101(root=f"{self.dataset_path}/CALTECH101_train", download=download, transform=composed)
+                validation_dataset = dsets.CIFAR10(root=f"{self.dataset_path}/CALTECH101_valid", download=download, transform=composed)
             case _:
                 raise Exception(f"Could not fetch dataset. --dataset must be one of {ALLOWED_DATASETS}")
         return train_dataset, validation_dataset
@@ -419,12 +400,12 @@ class CnnTrainer:
             raise Exception(f"--dataset must be one of {ALLOWED_DATASETS}. Got {dataset_name}")
         return image_size
 
-
     # Model Training Function
     def train_model(self, epoch, n_epochs):
         # Keeps track of cost for each epoch
         cost=0
         total_processed = 0
+        last_processed_thousand = 0
         # For each batch in train loader
         for x, y in self.train_loader:
             # Move data to cuda if GPU available and keep on CPU otherwise
@@ -444,12 +425,14 @@ class CnnTrainer:
             cost+=torch.Tensor.cpu(loss.data)
 
             total_processed += len(y)
-            print(f'({self.dataset_name},{self.model_name}) Epoch {epoch + 1}/{n_epochs}. Trained on images {total_processed}/{self.N_train}')
+            if int(total_processed / 1000) > last_processed_thousand:
+                last_processed_thousand = int(total_processed / 1000)
+                print(f'({self.dataset_name},{type(self.model).__name__},{self.model_name}) Epoch {epoch + 1}/{n_epochs}. Trained on images {total_processed}/{self.N_train}')
             
         # Saves cost of training data of epoch
         self.cost_list.append(cost)
             
-
+    # Model accuracy calculation function
     def calculate_accuracy(self):
         correct=0
         # Perform a prediction on the validation  data  

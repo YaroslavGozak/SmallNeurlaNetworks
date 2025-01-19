@@ -3,26 +3,29 @@ import torch
 # PyTorch Neural Network
 import torch.nn as nn
 
-class Small_CNN_5x5_dilation(nn.Module):
+class Small_CNN_Generic_Cifar_32_64_channels(nn.Module):
     
     # Contructor
-    def __init__(self):
-        super(Small_CNN_5x5_dilation, self).__init__()
+    def __init__(self, first_layer_kernel_size, second_layer_kernel_size, image_resolution: int):
+        super(Small_CNN_Generic_Cifar_32_64_channels, self).__init__()
         # The reason we start with 1 channel is because we have a single black and white image
-        # Channel Width after this layer is 16
-        self.cnn1 = nn.Conv2d(in_channels=1, out_channels=16, kernel_size=5, stride=1, padding=2, dilation=2)
+        padding = int(first_layer_kernel_size / 2)
+        # Channel Width after this layer is 32
+        self.cnn1 = nn.Conv2d(in_channels=3, out_channels=32, kernel_size=first_layer_kernel_size, stride=1, padding=padding)
         self.relu1 = nn.ReLU(inplace=True)
-        # Channel Wifth after this layer is 8
+        # Channel Wifth after this layer is 16
         self.maxpool1=nn.MaxPool2d(kernel_size=2)
         
-        # Channel Width after this layer is 8
-        self.cnn2 = nn.Conv2d(in_channels=16, out_channels=32, kernel_size=5, stride=1, padding=2, dilation=2)
+        padding = int(second_layer_kernel_size / 2)
+        # Channel Width after this layer is 16
+        self.cnn2 = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=second_layer_kernel_size, stride=1, padding=padding)
         self.relu2 = nn.ReLU(inplace=True)
-        # Channel Width after this layer is 4
+        # Channel Width after this layer is 8
         self.maxpool2=nn.MaxPool2d(kernel_size=2)
         # In total we have 32 channels which are each 4 * 4 in size based on the width calculation above. Channels are squares.
         # The output is a value for each class
-        self.fc1 = nn.Linear(32 * 1 * 1, 10)
+        final_layer_resolution = int(image_resolution / 4)
+        self.fc1 = nn.Linear(64 * final_layer_resolution * final_layer_resolution, 10)
     
     # Prediction
     def forward(self, x):
