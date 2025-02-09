@@ -9,7 +9,6 @@ from models.alexnet_32 import AlexNet32
 from drawing import plot_activations, plot_channels, show_data
 
 # PyTorch Library
-from models.small_cnn_generic import Small_CNN_Generic
 import torch
 # Allows us to transform data
 import torchvision.transforms as transforms
@@ -23,10 +22,11 @@ import matplotlib.pylab as plt
 from pathlib import Path
 
 from models.small_cnn_generic_1_layer import Small_CNN_Generic_1_layer
-from models.small_cnn_generic_cifar_32_64_channels import Small_CNN_Generic_Cifar_32_64_channels
-from models.small_cnn_generic_cifar_32_channels import Small_CNN_Generic_Cifar_32_channels
-from models.small_cnn_generic_dilation import Small_CNN_Generic_dilation
-from models.small_cnn_generic_strided import Small_CNN_Generic_strided
+from models.small_cnn_generic_2_layers import Small_CNN_Generic_2_layers
+from models.small_cnn_generic_3_layers import Small_CNN_Generic_3_layers
+from models.small_cnn_generic_4_layers import Small_CNN_Generic_4_layers
+from models.small_cnn_generic_5_layers import Small_CNN_Generic_5_layers
+from models.small_cnn_generic_6_layers import Small_CNN_Generic_6_layers
 
 class CnnTrainer:
 
@@ -61,13 +61,10 @@ class CnnTrainer:
         # First the image is resized then converted to a tensor
         composed = transforms.Compose([transforms.Resize((self.image_size, self.image_size)), transforms.ToTensor()])
 
-        print("Getting train and validation datasets...")
         train_dataset, validation_dataset = self.get_datasets(self.dataset_name, composed)
         # Size of the validation dataset
         self.N_validation=len(validation_dataset)
         self.N_train=len(train_dataset)
-        
-        print("Got datasets")
 
         # Create the model object using CNN class
         self.model = self.create_model(self.model_name)
@@ -87,16 +84,12 @@ class CnnTrainer:
             # =========================== Train the model ====================================
             # We create a criterion which will measure loss
             self.criterion = nn.CrossEntropyLoss()
-            learning_rate = 0.1
-            # Create an optimizer that updates model parameters using the learning rate and gradient
-            self.optimizer = torch.optim.SGD(self.model.parameters(), lr = learning_rate)
             # Create a Data Loader for the training data with a batch size of 256 
             self.train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=64)
             # Create a Data Loader for the validation data with a batch size of 5000 
             self.validation_loader = torch.utils.data.DataLoader(dataset=validation_dataset, batch_size=64)
 
 
-            print("Training model...")
             # List to keep track of cost and accuracy
             self.cost_list=[]
             self.accuracy_list=[]
@@ -107,6 +100,13 @@ class CnnTrainer:
             for epoch in range(self.epochs):
                 # Train model
                 print(f'Training epoch {epoch + 1}/{self.epochs}')
+
+                # Decrease learning rate by 0.1 every 30 epochs
+                learning_rate = pow(0.1, int(epoch/30) + 1)
+                # Learning rate of 0.1 is too much. Half it for smoother accuracy gain
+                learning_rate = 0.05 if learning_rate == 0.1 else learning_rate
+                # Create an optimizer that updates model parameters using the learning rate and gradient
+                self.optimizer = torch.optim.SGD(self.model.parameters(), lr = learning_rate)
                 self.train_model(epoch, self.epochs)
 
                 # Validate model
@@ -282,6 +282,14 @@ class CnnTrainer:
         else:
             self.stride = int(self.stride)
             print(f'stride set to {self.stride}')
+
+        self.layers_num = args.layers_num
+        if self.layers_num is None:
+            self.layers_num = 2
+            print(f"--layers_num not provided. Defaulting to {self.layers_num}")
+        else:
+            self.layers_num = int(self.layers_num)
+            print(f'layers_num set to {self.layers_num}')
         
         self.base_path = args.path
         if self.base_path is None:
@@ -303,7 +311,7 @@ class CnnTrainer:
             self.compute = 'gpu'
             print(f"--compute not provided. Defaulting to {self.compute}")
         else:
-            print(f'Compute mode set to {self.compute}. Will try to use it if systems supports this option')
+            print(f'Compute mode set to {self.compute}. Will try to use it if system supports this option')
 
         self.iterate = False if args.iterate in ['false', 'False', ''] else bool(args.iterate)
         if self.iterate == True:
@@ -314,41 +322,55 @@ class CnnTrainer:
                 raise Exception(f'--first_kernel and --second_kernel must be set')
         
         self.model_name = args.model
-        print(f"Running model {self.model_name}")
         
         self.epochs = args.epochs
         self.epochs = 10 if args.epochs is None else args.epochs
         if not isinstance(self.epochs, (int, float, complex)) and not isinstance(self.epochs, bool):
             raise Exception(f'--epochs must be valid number if present')
-        print(f"for epochs {self.epochs}")
+        print(f"Training model for epochs {self.epochs}")
         return
 
     def create_model(self, model_name):
         if self.iterate == True:
             self.model_name = f"small_cnn_{self.first_kernel}x{self.second_kernel}"
-            print(self.model_name)
-            print(self.dataset_name)
+            config = None
             match self.dataset_name:
                 case 'mnist':
                     model = Small_CNN_Generic_1_layer(self.first_kernel, channels=[1, 16, 32], image_resolution=16)
                 case 'mnist_scaled_32':
-                    model = Small_CNN_Generic(self.first_kernel, self.second_kernel, channels=[1, 16, 32], image_resolution=32)
+                    model = Small_CNN_Generic_2_layers(self.first_kernel, self.second_kernel, channels=[1, 16, 32], image_resolution=32)
                 case 'mnist_scaled_64':
-                    model = Small_CNN_Generic(self.first_kernel, self.second_kernel, channels=[1, 16, 32], image_resolution=64)
+                    model = Small_CNN_Generic_2_layers(self.first_kernel, self.second_kernel, channels=[1, 16, 32], image_resolution=64)
                 case 'mnist_scaled_128':
-                    model = Small_CNN_Generic(self.first_kernel, self.second_kernel, channels=[1, 16, 32], image_resolution=128)
+                    model = Small_CNN_Generic_2_layers(self.first_kernel, self.second_kernel, channels=[1, 16, 32], image_resolution=128)
                 case 'mnist_scaled_256':
-                    model = Small_CNN_Generic(self.first_kernel, self.second_kernel, channels=[1, 16, 32], image_resolution=256)
+                    model = Small_CNN_Generic_2_layers(self.first_kernel, self.second_kernel, channels=[1, 16, 32], image_resolution=256)
                 case 'cifar10':
-                    model = Small_CNN_Generic(self.first_kernel, self.second_kernel, channels=[3, 16, 32], image_resolution=32, stride=self.stride, dilation=self.dilation)
+                    image_resolution=32
                 case 'cifar10_scaled_64':
-                    model = Small_CNN_Generic(self.first_kernel, self.second_kernel, channels=[3, 16, 32], image_resolution=64, stride=self.stride, dilation=self.dilation)
+                    image_resolution=64
                 case 'cifar10_scaled_128':
-                    model = Small_CNN_Generic(self.first_kernel, self.second_kernel, channels=[3, 16, 32], image_resolution=128, stride=self.stride, dilation=self.dilation)
+                    image_resolution=128
                 case 'cifar10_scaled_256':
-                    model = Small_CNN_Generic(self.first_kernel, self.second_kernel, channels=[3, 16, 32], image_resolution=256, stride=self.stride, dilation=self.dilation)
+                    image_resolution=256
                 case _:
                     raise Exception(f'Generic model for {self.dataset_name} not found')
+            if image_resolution is not None:
+                if self.layers_num == 1:
+                    model = Small_CNN_Generic_1_layer (self.first_kernel, channels=[3, 32, 64, 128], image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
+                elif self.layers_num == 2:
+                    model = Small_CNN_Generic_2_layers(self.first_kernel, self.second_kernel, channels=[3, 32, 64, 128], image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
+                elif self.layers_num == 3:
+                    model = Small_CNN_Generic_3_layers(self.first_kernel, self.second_kernel, channels=[3, 32, 64, 128], image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
+                elif self.layers_num == 4:
+                    model = Small_CNN_Generic_4_layers(self.first_kernel, self.second_kernel, channels=[3, 32, 64, 128, 256], image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
+                elif self.layers_num == 5:
+                    model = Small_CNN_Generic_5_layers(self.first_kernel, self.second_kernel, channels=[3, 32, 64, 128, 256, 512], image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
+                elif self.layers_num == 6:
+                    model = Small_CNN_Generic_6_layers(self.first_kernel, self.second_kernel, channels=[3, 32, 64, 128, 256, 512], image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
+                else:
+                    raise Exception(f'layers_num value not supported. Got {self.layers_num}')
+            self.model_name = model.get_name()
             return model
 
         match model_name:
@@ -427,7 +449,7 @@ class CnnTrainer:
             total_processed += len(y)
             if int(total_processed / 1000) > last_processed_thousand:
                 last_processed_thousand = int(total_processed / 1000)
-                print(f'({self.dataset_name},{type(self.model).__name__},{self.model_name}) Epoch {epoch + 1}/{n_epochs}. Trained on images {total_processed}/{self.N_train}')
+                print(f'({self.dataset_name},{self.model.get_config()} Epoch {epoch + 1}/{n_epochs}. Trained on images {total_processed}/{self.N_train}')
             
         # Saves cost of training data of epoch
         self.cost_list.append(cost)

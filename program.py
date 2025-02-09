@@ -29,6 +29,7 @@ parser.add_argument('--second_layers')
 parser.add_argument('--nets')
 parser.add_argument('--dilation')
 parser.add_argument('--stride')
+parser.add_argument('--layers_num')
 parser.add_argument('--iterate')
 parser.add_argument('--compute', choices=['cpu', 'gpu'])
 parser.add_argument('--config')
@@ -108,6 +109,9 @@ if args.config:
         args.dataset_path = config['dataset_path']
         args.first_layers = config['first_layers']
         args.second_layers = config['second_layers']
+        args.layers_num = config['layers_num']
+        args.dilation = config['dilation']
+        args.stride = config['stride']
         args.iterate = config['iterate']
         args.epochs = config['epochs']
         args.compute = config['compute']

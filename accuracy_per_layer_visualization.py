@@ -137,9 +137,10 @@ for cnn_directory in cnn_directories:
         cnn_data.accuracy = loaded_accuracy[-1] # Take latest accuracy. This is model accuracy after last epoch -> best accuracy
         cnn_data.time = loaded_time
         cnn_data.time_per_sample = loaded_time_per_sample
-        dimension = cnn_data.name[len("small_cnn_"):]
+        dimension = cnn_data.name[len("Small_CNN_Generic_3_layers"):]
         cnn_data.first_layer = int(dimension[:dimension.index('x')])
         cnn_data.second_layer = int(dimension[dimension.index('x') + 1:])
+        cnn_data.name = cnn_data.name + ' ' + str(round(cnn_data.accuracy*100, 2)) + '%'
     
     # Average
     cnn_datas.append(cnn_data)

@@ -1,52 +1,17 @@
 {
     "configs" : [
         {
-            "path" : "H:\\Projects\\University\\NeauralNetworks\\train_2025_01_17",
+            "path" : "H:\\Projects\\University\\NeauralNetworks\\train_2025_02_03_layer_2_epoch_60_maxpool_every_cnn",
             "dataset": "cifar10",
             "dataset_path": "H:\\Projects\\University\\NeauralNetworks\\Datasets",
             "first_layers": "3,5,7,9,11",
             "second_layers": "3,5,7,9,11",
             "iterate": true,
-            "epochs": 10,
+            "epochs": 50,
             "compute": "gpu",
             "stride": 1,
-            "dilation": 1
-        },
-        {
-            "path" : "H:\\Projects\\University\\NeauralNetworks\\train_2025_01_17",
-            "dataset": "cifar10_scaled_64",
-            "dataset_path": "H:\\Projects\\University\\NeauralNetworks\\Datasets",
-            "first_layers": "3,5,7,9,11",
-            "second_layers": "3,5,7,9,11",
-            "iterate": true,
-            "epochs": 10,
-            "compute": "gpu",
-            "stride": 1,
-            "dilation": 1
-        },
-        {
-            "path" : "H:\\Projects\\University\\NeauralNetworks\\train_2025_01_17",
-            "dataset": "cifar10_scaled_128",
-            "dataset_path": "H:\\Projects\\University\\NeauralNetworks\\Datasets",
-            "first_layers": "3,5,7,9,11",
-            "second_layers": "3,5,7,9,11",
-            "iterate": true,
-            "epochs": 10,
-            "compute": "gpu",
-            "stride": 1,
-            "dilation": 1
-        },
-        {
-            "path" : "H:\\Projects\\University\\NeauralNetworks\\train_2025_01_17",
-            "dataset": "cifar10_scaled_256",
-            "dataset_path": "H:\\Projects\\University\\NeauralNetworks\\Datasets",
-            "first_layers": "3,5,7,9,11",
-            "second_layers": "3,5,7,9,11",
-            "iterate": true,
-            "epochs": 10,
-            "compute": "gpu",
-            "stride": 1,
-            "dilation": 1
+            "dilation": 1,
+            "layers_num": 2
         }
     ]
 }
