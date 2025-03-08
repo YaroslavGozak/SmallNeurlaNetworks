@@ -21,12 +21,19 @@ import matplotlib.pylab as plt
 
 from pathlib import Path
 
+from models.small_cnn_generic_10_layers import Small_CNN_Generic_10_layers
+from models.small_cnn_generic_11_layers import Small_CNN_Generic_11_layers
+from models.small_cnn_generic_12_layers import Small_CNN_Generic_12_layers
+from models.small_cnn_generic_13_layers import Small_CNN_Generic_13_layers
 from models.small_cnn_generic_1_layer import Small_CNN_Generic_1_layer
 from models.small_cnn_generic_2_layers import Small_CNN_Generic_2_layers
 from models.small_cnn_generic_3_layers import Small_CNN_Generic_3_layers
 from models.small_cnn_generic_4_layers import Small_CNN_Generic_4_layers
 from models.small_cnn_generic_5_layers import Small_CNN_Generic_5_layers
 from models.small_cnn_generic_6_layers import Small_CNN_Generic_6_layers
+from models.small_cnn_generic_7_layers import Small_CNN_Generic_7_layers
+from models.small_cnn_generic_8_layers import Small_CNN_Generic_8_layers
+from models.small_cnn_generic_9_layers import Small_CNN_Generic_9_layers
 
 class CnnTrainer:
 
@@ -99,7 +106,7 @@ class CnnTrainer:
             # Loops for each epoch
             for epoch in range(self.epochs):
                 # Train model
-                print(f'Training epoch {epoch + 1}/{self.epochs}')
+                # print(f'Training epoch {epoch + 1}/{self.epochs}')
 
                 # Decrease learning rate by 0.1 every 30 epochs
                 learning_rate = pow(0.1, int(epoch/30) + 1)
@@ -110,7 +117,7 @@ class CnnTrainer:
                 self.train_model(epoch, self.epochs)
 
                 # Validate model
-                print(f'Validating epoch {epoch + 1}/{self.epochs}')
+                print(f'Validating epoch {epoch + 1}/{self.epochs}', '\r')
                 validation_start = time.time()
                 # Keeps track of correct predictions
                 accuracy = self.calculate_accuracy()
@@ -320,6 +327,14 @@ class CnnTrainer:
             self.second_kernel = args.second_kernel
             if self.first_kernel is None or self.second_kernel is None:
                 raise Exception(f'--first_kernel and --second_kernel must be set')
+            
+        
+        self.channels = [3, 32, 64, 128, 256, 512]
+        if args.channels is not None:
+            self.channels = [int(numeric_string) for numeric_string in args.channels.split(',')]
+            print(f'Channels defined: {self.channels}')
+        else:
+            print(F'Using default channels: {self.channels}')
         
         self.model_name = args.model
         
@@ -333,7 +348,6 @@ class CnnTrainer:
     def create_model(self, model_name):
         if self.iterate == True:
             self.model_name = f"small_cnn_{self.first_kernel}x{self.second_kernel}"
-            config = None
             match self.dataset_name:
                 case 'mnist':
                     model = Small_CNN_Generic_1_layer(self.first_kernel, channels=[1, 16, 32], image_resolution=16)
@@ -357,17 +371,31 @@ class CnnTrainer:
                     raise Exception(f'Generic model for {self.dataset_name} not found')
             if image_resolution is not None:
                 if self.layers_num == 1:
-                    model = Small_CNN_Generic_1_layer (self.first_kernel, channels=[3, 32, 64, 128], image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
+                    model = Small_CNN_Generic_1_layer (self.first_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
                 elif self.layers_num == 2:
-                    model = Small_CNN_Generic_2_layers(self.first_kernel, self.second_kernel, channels=[3, 32, 64, 128], image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
+                    model = Small_CNN_Generic_2_layers(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
                 elif self.layers_num == 3:
-                    model = Small_CNN_Generic_3_layers(self.first_kernel, self.second_kernel, channels=[3, 32, 64, 128], image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
+                    model = Small_CNN_Generic_3_layers(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
                 elif self.layers_num == 4:
-                    model = Small_CNN_Generic_4_layers(self.first_kernel, self.second_kernel, channels=[3, 32, 64, 128, 256], image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
+                    model = Small_CNN_Generic_4_layers(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
                 elif self.layers_num == 5:
-                    model = Small_CNN_Generic_5_layers(self.first_kernel, self.second_kernel, channels=[3, 32, 64, 128, 256, 512], image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
+                    model = Small_CNN_Generic_5_layers(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
                 elif self.layers_num == 6:
-                    model = Small_CNN_Generic_6_layers(self.first_kernel, self.second_kernel, channels=[3, 32, 64, 128, 256, 512], image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
+                    model = Small_CNN_Generic_6_layers(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
+                elif self.layers_num == 7:
+                    model = Small_CNN_Generic_7_layers(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
+                elif self.layers_num == 8:
+                    model = Small_CNN_Generic_8_layers(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
+                elif self.layers_num == 9:
+                    model = Small_CNN_Generic_9_layers(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
+                elif self.layers_num == 10:
+                    model = Small_CNN_Generic_10_layers(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
+                elif self.layers_num == 11:
+                    model = Small_CNN_Generic_11_layers(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
+                elif self.layers_num == 12:
+                    model = Small_CNN_Generic_12_layers(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
+                elif self.layers_num == 13:
+                    model = Small_CNN_Generic_13_layers(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
                 else:
                     raise Exception(f'layers_num value not supported. Got {self.layers_num}')
             self.model_name = model.get_name()
@@ -411,6 +439,12 @@ class CnnTrainer:
                     download = True
                 train_dataset = dsets.Caltech101(root=f"{self.dataset_path}/CALTECH101_train", download=download, transform=composed)
                 validation_dataset = dsets.CIFAR10(root=f"{self.dataset_path}/CALTECH101_valid", download=download, transform=composed)
+            case 'coco':
+                download = False
+                if not Path(f"{self.dataset_path}/COCO_train").exists():
+                    download = True
+                train_dataset = dsets.CocoDetection(root=f"{self.dataset_path}/CALTECH101_train", download=download, transform=composed)
+                validation_dataset = dsets.CIFAR10(root=f"{self.dataset_path}/CALTECH101_valid", download=download, transform=composed)
             case _:
                 raise Exception(f"Could not fetch dataset. --dataset must be one of {ALLOWED_DATASETS}")
         return train_dataset, validation_dataset
@@ -449,7 +483,7 @@ class CnnTrainer:
             total_processed += len(y)
             if int(total_processed / 1000) > last_processed_thousand:
                 last_processed_thousand = int(total_processed / 1000)
-                print(f'({self.dataset_name},{self.model.get_config()} Epoch {epoch + 1}/{n_epochs}. Trained on images {total_processed}/{self.N_train}')
+                print(f'({self.dataset_name},{self.model.get_config()} Epoch {epoch + 1}/{n_epochs}. Trained on images {total_processed}/{self.N_train}', end='\r')
             
         # Saves cost of training data of epoch
         self.cost_list.append(cost)

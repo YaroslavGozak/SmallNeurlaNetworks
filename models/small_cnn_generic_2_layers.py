@@ -1,7 +1,7 @@
-# PyTorch Library
-import torch
 # PyTorch Neural Network
 import torch.nn as nn
+
+from dtos.network_config import NetworkConfig
 
 class Small_CNN_Generic_2_layers(nn.Module):
     
@@ -60,8 +60,16 @@ class Small_CNN_Generic_2_layers(nn.Module):
         out = out2.view(out2.size(0),-1)
         return z1, a1, z2, a2, out1, out2, out
     
-    def get_name(self):
-        return f"{type(self).__name__} {self.first_kernel}x{self.second_kernel}"
+    def get_kernel_config(self):
+        return f"{self.first_kernel}x{self.second_kernel}"
     
-    def get_config(self):
-        return f'{self.get_name()}  ;res:{self.image_resolution};channels:{self.channels};dilation:{self.dilation};stride:{self.stride}'
+    def get_name(self):
+        return f"{type(self).__name__} {self.get_kernel_config()}"
+    
+    def get_config_string(self):
+        return f'{self.get_name()};  res:{self.image_resolution};  channels:{self.channels};  dilation:{self.dilation};  stride:{self.stride}'
+    
+    def get_config(self) -> NetworkConfig:
+        return NetworkConfig(type(self).__name__, self.channels, self.get_kernel_config(), self.image_resolution, self.dilation, self.stride)
+
+    

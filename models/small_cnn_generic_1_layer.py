@@ -44,5 +44,5 @@ class Small_CNN_Generic_1_layer(Small_CNN_Generic_2_layers):
         out = out1.view(out1.size(0),-1)
         return z1, a1, out1, out
     
-    def get_name(self):
-        return f"{type(self).__name__}{self.first_kernel}"
+    def get_kernel_config(self):
+        return f"{self.first_kernel}"
