@@ -1,7 +1,5 @@
 # PyTorch Library
 from itertools import groupby
-from operator import add
-import pandas as pd
 import os
 from numpy import interp
 import torch
@@ -134,18 +132,24 @@ for cnn_directory in cnn_directories:
             print(f"{cnn_data.name} doesn't have time per sample")
             loaded_time_per_sample = None
         loaded_accuracy = torch.load(cnn_iteration.joinpath('accuracy.pt'),  weights_only=True)
-        cnn_data.accuracy = loaded_accuracy[-1] # Take latest accuracy. This is model accuracy after last epoch -> best accuracy
+        cnn_data.accuracy = loaded_accuracy[-1] # Take latest accuracy. This is model accuracy after last epoch
         cnn_data.time = loaded_time
         cnn_data.time_per_sample = loaded_time_per_sample
-        dimension = cnn_data.name[len("Small_CNN_Generic_3_layers"):]
-        cnn_data.first_layer = int(dimension[:dimension.index('x')])
-        cnn_data.second_layer = int(dimension[dimension.index('x') + 1:])
-        cnn_data.name = cnn_data.name + ' ' + str(round(cnn_data.accuracy*100, 2)) + '%'
+        try:
+            dimension = cnn_data.name[len("Small_CNN_Generic_N_layers"):]
+            dimension = cnn_data.name.split(' ')[1]
+            cnn_data.first_layer = int(dimension[:dimension.index('x')])
+            cnn_data.second_layer = int(dimension[dimension.index('x') + 1:])
+        except:
+            print('Could not parse dimensions')
+            cnn_data.first_layer = 0
+            cnn_data.second_layer = 0
+        cnn_data.name = cnn_data.name + ' ' + str(round(cnn_data.accuracy*100, 2)) + '%' 
     
     # Average
     cnn_datas.append(cnn_data)
             
-cnn_datas = list(filter(lambda cnn: (cnn.accuracy > 0), cnn_datas))
+cnn_datas = list(sorted(filter(lambda cnn: (cnn.accuracy > 0.1), cnn_datas), key=lambda x: x.accuracy, reverse=True))
 min_accuracy = 1
 max_accuracy = 0
 for cnn_data in cnn_datas:
