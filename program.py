@@ -14,8 +14,7 @@ class NetConfig:
         self.first_layer = first
         self.second_layer = second
 
-def run_training(args):
-
+def run_model_training(args):
     trainer = CnnTrainer()
     if args.iterate:
         print('--iterate set. Will loop through models')
@@ -75,6 +74,29 @@ def run_training(args):
     else:
         trainer.process(args)
 
+def run_training_by_config(args):
+    # Opening JSON file
+    f = open(args.config)
+    data = json.load(f)
+    for config in data['configs']:
+        args.model = config['model']
+        args.path = config['path']
+        args.dataset = config['dataset']
+        args.dataset_path = config['dataset_path']
+        args.first_layers = config['first_layers']
+        args.second_layers = config['second_layers']
+        args.layers_num = config['layers_num']
+        args.dilation = config['dilation']
+        args.stride = config['stride']
+        args.iterate = config['iterate']
+        args.epochs = config['epochs']
+        args.compute = config['compute']
+        args.channels = config['channels']
+
+        run_model_training(args)
+    # Closing file
+    f.close()
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
                             prog='program',
@@ -99,33 +121,13 @@ if __name__ == '__main__':
     parser.add_argument('--channels')
     args = parser.parse_args()
 
-    program_start = time.time()         
+    program_start = time.time()    
+    manager = TrainingManager()     
 
     if args.config:
-        # Opening JSON file
-        f = open(args.config)
-        data = json.load(f)
-        for config in data['configs']:
-            args.model = config['model']
-            args.path = config['path']
-            args.dataset = config['dataset']
-            args.dataset_path = config['dataset_path']
-            args.first_layers = config['first_layers']
-            args.second_layers = config['second_layers']
-            args.layers_num = config['layers_num']
-            args.dilation = config['dilation']
-            args.stride = config['stride']
-            args.iterate = config['iterate']
-            args.epochs = config['epochs']
-            args.compute = config['compute']
-            args.channels = config['channels']
-
-        # Closing file
-        f.close()
-
-    # run_training(args)
-    manager = TrainingManager()
-    manager.start_managed_process(run_training, (args,))
+        manager.start_managed_process(run_training_by_config, (args,))
+    else:
+        manager.start_managed_process(run_model_training, (args,))
 
     program_end = time.time()
     elapsed_time = round(program_end - program_start, 1)

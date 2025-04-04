@@ -92,9 +92,9 @@ class CnnTrainer:
             # We create a criterion which will measure loss
             self.criterion = nn.CrossEntropyLoss()
             # Create a Data Loader for the training data with a batch size of 256 
-            self.train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=64)
+            self.train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=16) # 64
             # Create a Data Loader for the validation data with a batch size of 5000 
-            self.validation_loader = torch.utils.data.DataLoader(dataset=validation_dataset, batch_size=64)
+            self.validation_loader = torch.utils.data.DataLoader(dataset=validation_dataset, batch_size=16) # 64
 
 
             # List to keep track of cost and accuracy
@@ -297,13 +297,19 @@ class CnnTrainer:
         else:
             self.layers_num = int(self.layers_num)
             print(f'layers_num set to {self.layers_num}')
+
+        self.epochs = args.epochs
+        self.epochs = 10 if args.epochs is None else args.epochs
+        if not isinstance(self.epochs, (int, float, complex)) and not isinstance(self.epochs, bool):
+            raise Exception(f'--epochs must be valid number if present')
+        print(f"Training model for epochs {self.epochs}")
         
         self.base_path = args.path
         if self.base_path is None:
             default_path = self.default_base_path + '/default'
             print(f"--path not provided. Defaulting to {default_path}")
             self.base_path = default_path
-        self.base_path = self.base_path + '_' + self.dataset_name + (f'_dilation{self.dilation}' if self.dilation > 1 else '') + (f'_stride{self.stride}' if self.stride > 1 else '')
+        self.base_path = self.base_path + '_layer' + str(self.layers_num) + '_epoch_' + str(self.epochs) + '_' + self.dataset_name + (f'_dilation{self.dilation}' if self.dilation > 1 else '') + (f'_stride{self.stride}' if self.stride > 1 else '')
 
         self.dataset_path = args.dataset_path
         if self.dataset_path is None:
@@ -338,11 +344,6 @@ class CnnTrainer:
         
         self.model_name = args.model
         
-        self.epochs = args.epochs
-        self.epochs = 10 if args.epochs is None else args.epochs
-        if not isinstance(self.epochs, (int, float, complex)) and not isinstance(self.epochs, bool):
-            raise Exception(f'--epochs must be valid number if present')
-        print(f"Training model for epochs {self.epochs}")
         return
 
     def create_model(self, model_name):
