@@ -92,7 +92,7 @@ def show_data_black_white(data_sample, image_size):
     plt.title('y = '+ str(data_sample[1]))
 
 def show_data_rgb(data_sample):
-    inverted_image_array = np.rollaxis(data_sample[0].numpy(), 0, 3)
+    inverted_image_array = np.rollaxis(Tensor.cpu(data_sample[0]).numpy(), 0, 3)
     plt.imshow(inverted_image_array, cmap='gray')
     plt.title('y = '+ str(data_sample[1]))
     

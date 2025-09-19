@@ -27,6 +27,7 @@ from models.small_cnn_generic_12_layers import Small_CNN_Generic_12_layers
 from models.small_cnn_generic_13_layers import Small_CNN_Generic_13_layers
 from models.small_cnn_generic_1_layer import Small_CNN_Generic_1_layer
 from models.small_cnn_generic_2_layers import Small_CNN_Generic_2_layers
+from models.small_cnn_generic_2_layers_enhanced import Small_CNN_Generic_2_layers_enhanced
 from models.small_cnn_generic_3_layers import Small_CNN_Generic_3_layers
 from models.small_cnn_generic_4_layers import Small_CNN_Generic_4_layers
 from models.small_cnn_generic_5_layers import Small_CNN_Generic_5_layers
@@ -60,7 +61,10 @@ class CnnTrainer:
             print(f"GPU: {torch.cuda.get_device_name(0)} is available.")
         else:
             print("No GPU available. Training will run on CPU.")
-        self.device = torch.device("cuda" if torch.cuda.is_available() and self.compute == 'gpu' else "cpu")
+        if self.compute == 'gpu':
+            self.device = torch.device("cuda")
+        else:
+            self.device = torch.device("cpu")
 
         today = datetime.today().strftime('%Y-%m-%d_%H.%M.%S')
 
@@ -108,8 +112,8 @@ class CnnTrainer:
                 # Train model
                 # print(f'Training epoch {epoch + 1}/{self.epochs}')
 
-                # Decrease learning rate by 0.1 every 30 epochs
-                learning_rate = pow(0.1, int(epoch/30) + 1)
+                # Decrease learning rate by 0.1 every 10 epochs
+                learning_rate = pow(0.1, int(epoch/10) + 1)
                 # Learning rate of 0.1 is too much. Half it for smoother accuracy gain
                 learning_rate = 0.05 if learning_rate == 0.1 else learning_rate
                 # Create an optimizer that updates model parameters using the learning rate and gradient
@@ -198,7 +202,7 @@ class CnnTrainer:
                 print(f'Accuracy: {accuracy}')
                 # torch.save(time_per_sample, f'{save_path}/time_per_sample.pt')
                 # torch.save([accuracy], f'{save_path}/accuracy.pt')
-                return self.model_name, self.dataset_name, accuracy, time_per_sample_ms
+                # return self.model_name, self.dataset_name, accuracy, time_per_sample_ms
         
 
         if self.plot_channels_activations:
@@ -250,6 +254,8 @@ class CnnTrainer:
             print('Plotting misclassified samples...')
             count = 0
             for x, y in torch.utils.data.DataLoader(dataset=validation_dataset, batch_size=1):
+                x = x.to(self.device)
+                y = y.to(self.device)
                 z = self.model(x)
                 _, yhat = torch.max(z, 1)
                 if yhat != y:
@@ -309,7 +315,7 @@ class CnnTrainer:
             default_path = self.default_base_path + '/default'
             print(f"--path not provided. Defaulting to {default_path}")
             self.base_path = default_path
-        self.base_path = self.base_path + '_layer' + str(self.layers_num) + '_epoch_' + str(self.epochs) + '_' + self.dataset_name + (f'_dilation{self.dilation}' if self.dilation > 1 else '') + (f'_stride{self.stride}' if self.stride > 1 else '')
+        self.base_path = self.base_path + '_layer_' + str(self.layers_num) + '_epoch_' + str(self.epochs) + '_' + self.dataset_name + (f'_dilation{self.dilation}' if self.dilation > 1 else '') + (f'_stride{self.stride}' if self.stride > 1 else '')
 
         self.dataset_path = args.dataset_path
         if self.dataset_path is None:
@@ -374,7 +380,7 @@ class CnnTrainer:
                 if self.layers_num == 1:
                     model = Small_CNN_Generic_1_layer (self.first_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
                 elif self.layers_num == 2:
-                    model = Small_CNN_Generic_2_layers(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
+                    model = Small_CNN_Generic_2_layers_enhanced(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
                 elif self.layers_num == 3:
                     model = Small_CNN_Generic_3_layers(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
                 elif self.layers_num == 4:
@@ -407,6 +413,8 @@ class CnnTrainer:
                 model = AlexNet32(num_classes=10, dropout=0.5)
             case "alexnet":
                 model = AlexNet(num_classes=10, dropout=0.5)
+            case "small_cnn_2_layers_enhanced":
+                model = Small_CNN_Generic_2_layers_enhanced(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=128, stride=self.stride, dilation=self.dilation)
             case _:
                 raise Exception(f"--model {model_name} must be a valid model name")
         return model

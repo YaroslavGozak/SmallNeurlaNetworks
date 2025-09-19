@@ -51,7 +51,7 @@ class Small_CNN_Generic_7_layers(Small_CNN_Generic_2_layers):
         self.relu7 = nn.ReLU(inplace=True)
 
         # Channel Width after this layer is 2
-        self.maxpool6=nn.MaxPool2d(kernel_size=2)
+        self.maxpool7=nn.MaxPool2d(kernel_size=2)
 
         # In total we have 32 channels which are each 4 * 4 in size based on the width calculation above. Channels are squares.
         # The output is a value for each class
@@ -78,7 +78,7 @@ class Small_CNN_Generic_7_layers(Small_CNN_Generic_2_layers):
         x = self.relu6(x)
         x = self.cnn7(x)
         x = self.relu7(x)
-        x = self.maxpool6(x)
+        x = self.maxpool7(x)
         x = x.view(x.size(0), -1)
         x = self.fc1(x)
         return x
@@ -87,20 +87,20 @@ class Small_CNN_Generic_7_layers(Small_CNN_Generic_2_layers):
     def activations(self, x):
         # Outputs activation this is not necessary
         z1 = self.cnn1(x)
-        out1 = self.relu1(z1)
-        # out1 = self.maxpool1(a1)
+        a1 = self.relu1(z1)
+        out1 = self.maxpool1(a1)
         
         z2 = self.cnn2(out1)
         out2 = self.relu2(z2)
         # out2 = self.maxpool2(a2)
 
         z3 = self.cnn3(out2)
-        out3 = self.relu3(z3)
-        # out3 = self.maxpool3(a3)
+        a3 = self.relu3(z3)
+        out3 = self.maxpool3(a3)
 
         z4 = self.cnn4(out3)
         a4 = self.relu4(z4)
-        out4 = self.maxpool4(a4)
+        # out4 = self.maxpool5(a4)
 
-        out = out4.view(out3.size(0),-1)
-        return z1, out1, z2, out2, z3, out3, z4, a4, out1, out2, out3, out4, out
+        out = a4.view(out3.size(0),-1)
+        return z1, out1, z2, out2, z3, out3, z4, a4, out1, out2, out3, out

@@ -108,11 +108,10 @@ class Small_CNN_Generic_9_layers(Small_CNN_Generic_2_layers):
 
         z3 = self.cnn3(out2)
         out3 = self.relu3(z3)
-        # out3 = self.maxpool3(a3)
+        out3 = self.maxpool3(out3)
 
         z4 = self.cnn4(out3)
-        a4 = self.relu4(z4)
-        out4 = self.maxpool4(a4)
+        out4 = self.relu4(z4)
 
         out = out4.view(out3.size(0),-1)
-        return z1, out1, z2, out2, z3, out3, z4, a4, out1, out2, out3, out4, out
+        return z1, out1, z2, out2, z3, out3, z4, out4, out1, out2, out3, out4, out

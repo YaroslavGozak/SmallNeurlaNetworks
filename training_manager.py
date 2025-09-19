@@ -94,8 +94,10 @@ class TrainingManager:
         try:
             delegate(*args)
         except Exception as e:
+            import traceback
             print('Error occured during running underlying delegate method. Aborting......')
             print(e)
+            print(traceback.format_exc())
         print('Delegate completed. Sending exit notification...')
         child_conn.send("Completed")
 

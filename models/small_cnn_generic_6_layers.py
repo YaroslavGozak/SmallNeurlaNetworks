@@ -81,20 +81,20 @@ class Small_CNN_Generic_6_layers(Small_CNN_Generic_2_layers):
     def activations(self, x):
         # Outputs activation this is not necessary
         z1 = self.cnn1(x)
-        out1 = self.relu1(z1)
-        # out1 = self.maxpool1(a1)
+        a1 = self.relu1(z1)
+        out1 = self.maxpool1(a1)
         
         z2 = self.cnn2(out1)
         out2 = self.relu2(z2)
         # out2 = self.maxpool2(a2)
 
         z3 = self.cnn3(out2)
-        out3 = self.relu3(z3)
-        # out3 = self.maxpool3(a3)
+        a3 = self.relu3(z3)
+        out3 = self.maxpool3(a3)
 
         z4 = self.cnn4(out3)
         a4 = self.relu4(z4)
-        out4 = self.maxpool4(a4)
+        # out4 = self.maxpool5(a4)
 
-        out = out4.view(out3.size(0),-1)
-        return z1, out1, z2, out2, z3, out3, z4, a4, out1, out2, out3, out4, out
+        out = a4.view(out3.size(0),-1)
+        return z1, a1, z2, out2, z3, out3, z4, a4, out1, out2, out3, out
