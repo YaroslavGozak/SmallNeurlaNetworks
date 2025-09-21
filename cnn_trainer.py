@@ -1,4 +1,5 @@
 from datetime import datetime
+import gc
 import time
 
 import numpy as np
@@ -35,6 +36,7 @@ from models.small_cnn_generic_6_layers import Small_CNN_Generic_6_layers
 from models.small_cnn_generic_7_layers import Small_CNN_Generic_7_layers
 from models.small_cnn_generic_8_layers import Small_CNN_Generic_8_layers
 from models.small_cnn_generic_9_layers import Small_CNN_Generic_9_layers
+from utils import get_model_path
 
 class CnnTrainer:
 
@@ -95,10 +97,11 @@ class CnnTrainer:
             # =========================== Train the model ====================================
             # We create a criterion which will measure loss
             self.criterion = nn.CrossEntropyLoss()
-            # Create a Data Loader for the training data with a batch size of 256 
-            self.train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=16) # 64
+            batch_size = round(4096 / 2 / self.image_size) # 32 for image 256x256 and 512 for image 16x16
+            # Create a Data Loader for the training data with a batch size of corresponding size 
+            self.train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=batch_size, pin_memory=True)
             # Create a Data Loader for the validation data with a batch size of 5000 
-            self.validation_loader = torch.utils.data.DataLoader(dataset=validation_dataset, batch_size=16) # 64
+            self.validation_loader = torch.utils.data.DataLoader(dataset=validation_dataset, batch_size=batch_size, pin_memory=True)
 
 
             # List to keep track of cost and accuracy
@@ -162,6 +165,7 @@ class CnnTrainer:
             print(f'Saving model to disk')
             avg_performance = sum(self.performance_list) / self.epochs # performance was measured once per epoch
             print('========== Model data ==========')
+            print(f'Model                   | {self.model_name}')
             print(f'Average time per sample | {avg_performance}')
             print(f'Accuracy                | {self.accuracy_list}')
             print(f'Cost                    | {self.cost_list}')
@@ -180,6 +184,10 @@ class CnnTrainer:
             # Save figure to model folder because it is possible to save model to 1 file only
             plt.savefig(f'{today_path}/TrainingResults/accuracy.jpg')
             print('Model saved')
+
+            # Clean up some GPU space
+            gc.collect()
+            torch.cuda.empty_cache()
 
         else: # Performance check
             path = f'{self.folder_path}/latest'
@@ -315,7 +323,7 @@ class CnnTrainer:
             default_path = self.default_base_path + '/default'
             print(f"--path not provided. Defaulting to {default_path}")
             self.base_path = default_path
-        self.base_path = self.base_path + '_layer_' + str(self.layers_num) + '_epoch_' + str(self.epochs) + '_' + self.dataset_name + (f'_dilation{self.dilation}' if self.dilation > 1 else '') + (f'_stride{self.stride}' if self.stride > 1 else '')
+        self.base_path = get_model_path(self.base_path, str(self.layers_num), str(self.epochs), self.dataset_name, self.dilation, self.stride)
 
         self.dataset_path = args.dataset_path
         if self.dataset_path is None:
@@ -380,7 +388,7 @@ class CnnTrainer:
                 if self.layers_num == 1:
                     model = Small_CNN_Generic_1_layer (self.first_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
                 elif self.layers_num == 2:
-                    model = Small_CNN_Generic_2_layers_enhanced(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
+                    model = Small_CNN_Generic_2_layers(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
                 elif self.layers_num == 3:
                     model = Small_CNN_Generic_3_layers(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
                 elif self.layers_num == 4:

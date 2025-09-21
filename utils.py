@@ -27,3 +27,6 @@ def _log_api_usage_once(obj: Any) -> None:
     if isinstance(obj, FunctionType):
         name = obj.__name__
     torch._C._log_api_usage_once(f"{module}.{name}")
+
+def get_model_path(base_path: str, layers_num: str, epochs: str, dataset_name: str, dilation: int, stride: int):
+    return base_path + '_layer_' + layers_num + '_epoch_' + epochs + '_' + dataset_name + (f'_dilation{str(dilation)}' if dilation > 1 else '') + (f'_stride{str(stride)}' if stride > 1 else '')
