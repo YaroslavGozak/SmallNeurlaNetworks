@@ -64,11 +64,15 @@ parser = argparse.ArgumentParser(prog='scaler')
 
 parser.add_argument('--target_size')
 parser.add_argument('--dataset', choices=['mnist', 'cifar10'])
+parser.add_argument('--path')
 args = parser.parse_args()
+if args.path:  
+    base_path = args.path
+else:
+    raise Exception('Argument --path must be present and valid')
 dataset_name = 'mnist' if args.dataset is None else args.dataset
 target_size = 64 if args.target_size is None else int(args.target_size)
 
-base_path = "H:/Projects/University/NeauralNetworks/Datasets"
 scaled_images_path = base_path + f"/{dataset_name}_scaled_{str(target_size)}"
 save_path_train_dir = scaled_images_path + '/train'
 save_path_val_dir = scaled_images_path + '/validation'
