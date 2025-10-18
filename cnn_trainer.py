@@ -97,11 +97,16 @@ class CnnTrainer:
             # =========================== Train the model ====================================
             # We create a criterion which will measure loss
             self.criterion = nn.CrossEntropyLoss()
-            batch_size = round(4096 / 2 / self.image_size) # 32 for image 256x256 and 512 for image 16x16
+
+            self.batch_size = round(4096 / 2 / self.image_size) if args.batch_size is None else args.batch_size
+            if not isinstance(self.batch_size, (int, float, complex)) and not isinstance(self.batch_size, bool):
+                raise Exception(f'--batch_size must be valid number if present')
+            print(f"Batch size set to {self.batch_size}")
+ 
             # Create a Data Loader for the training data with a batch size of corresponding size 
-            self.train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=batch_size, pin_memory=True)
+            self.train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=self.batch_size, pin_memory=True)
             # Create a Data Loader for the validation data with a batch size of 5000 
-            self.validation_loader = torch.utils.data.DataLoader(dataset=validation_dataset, batch_size=batch_size, pin_memory=True)
+            self.validation_loader = torch.utils.data.DataLoader(dataset=validation_dataset, batch_size=self.batch_size, pin_memory=True)
 
 
             # List to keep track of cost and accuracy
@@ -347,7 +352,6 @@ class CnnTrainer:
             self.second_kernel = args.second_kernel
             if self.first_kernel is None or self.second_kernel is None:
                 raise Exception(f'--first_kernel and --second_kernel must be set')
-            
         
         self.channels = [3, 32, 64, 128, 256, 512]
         if args.channels is not None:

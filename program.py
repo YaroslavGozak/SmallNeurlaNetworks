@@ -92,6 +92,7 @@ def run_training_by_config(args):
         args.epochs = config['epochs']
         args.compute = config['compute']
         args.channels = config['channels']
+        args.batch_size = config['batch_size']
 
         run_model_training(args)
     # Closing file
@@ -108,17 +109,18 @@ if __name__ == '__main__':
     parser.add_argument('-d', '--dataset', choices=ALLOWED_DATASETS)
     parser.add_argument('-p', '--path')
     parser.add_argument('--dataset_path')
-    parser.add_argument('-e', '--epochs')
+    parser.add_argument('-e', '--epochs', type=int)
     parser.add_argument('--first_layers')
     parser.add_argument('--second_layers')
     parser.add_argument('--nets')
-    parser.add_argument('--dilation')
-    parser.add_argument('--stride')
-    parser.add_argument('--layers_num')
-    parser.add_argument('--iterate')
+    parser.add_argument('--dilation', type=int)
+    parser.add_argument('--stride', type=int)
+    parser.add_argument('--layers_num', type=int)
+    parser.add_argument('--iterate', type=bool)
     parser.add_argument('--compute', choices=['cpu', 'gpu'])
     parser.add_argument('--config')
     parser.add_argument('--channels')
+    parser.add_argument('--batch_size', type=int)
     args = parser.parse_args()
 
     program_start = time.time()    
