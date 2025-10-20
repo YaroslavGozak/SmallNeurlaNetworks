@@ -1,5 +1,6 @@
 from datetime import datetime
 import gc
+import multiprocessing
 import time
 
 import numpy as np
@@ -36,7 +37,27 @@ from models.small_cnn_generic_6_layers import Small_CNN_Generic_6_layers
 from models.small_cnn_generic_7_layers import Small_CNN_Generic_7_layers
 from models.small_cnn_generic_8_layers import Small_CNN_Generic_8_layers
 from models.small_cnn_generic_9_layers import Small_CNN_Generic_9_layers
+from training_manager import NotificationType, QueueItem, NetworkUpdateData
 from utils import get_model_path
+
+class NetworkConfiguration:
+    mode: str
+    model: str
+    path: str
+    dataset: str
+    dataset_path: str
+    first_layers: str
+    second_layers: str
+    first_kernel: int
+    second_kernel: int
+    layers_num: int
+    dilation: int
+    stride: int
+    iterate: bool
+    epochs: int
+    compute: str
+    channels: str
+    batch_size: int
 
 class CnnTrainer:
 
@@ -55,9 +76,10 @@ class CnnTrainer:
     first_kernel = None
     second_kernel = None
 
-    def process(self, args):
-        
-        self.extract_args(args)
+    def process(self, config: NetworkConfiguration, notification_queue: multiprocessing.Queue):
+
+        self.extract_args(config)
+        self.notification_queue = notification_queue
 
         if torch.cuda.is_available():
             print(f"GPU: {torch.cuda.get_device_name(0)} is available.")
@@ -97,11 +119,6 @@ class CnnTrainer:
             # =========================== Train the model ====================================
             # We create a criterion which will measure loss
             self.criterion = nn.CrossEntropyLoss()
-
-            self.batch_size = round(4096 / 2 / self.image_size) if args.batch_size is None else args.batch_size
-            if not isinstance(self.batch_size, (int, float, complex)) and not isinstance(self.batch_size, bool):
-                raise Exception(f'--batch_size must be valid number if present')
-            print(f"Batch size set to {self.batch_size}")
  
             # Create a Data Loader for the training data with a batch size of corresponding size 
             self.train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=self.batch_size, pin_memory=True)
@@ -118,7 +135,6 @@ class CnnTrainer:
             # Loops for each epoch
             for epoch in range(self.epochs):
                 # Train model
-                # print(f'Training epoch {epoch + 1}/{self.epochs}')
 
                 # Decrease learning rate by 0.1 every 10 epochs
                 learning_rate = pow(0.1, int(epoch/10) + 1)
@@ -282,18 +298,18 @@ class CnnTrainer:
         print('Done')
         return self.model_name, self.dataset_name, self.accuracy_list[-1], np.average(self.performance_list)
 
-    def extract_args(self, args):
-        print(args.mode)
-        self.mode = args.mode
+    def extract_args(self, config: NetworkConfiguration):
+        print(config.mode)
+        self.mode = config.mode
         if self.mode not in ['test', 'train', 'performance']:
             raise Exception(f'--mode must be one of {self.allowed_modes}')
 
-        self.dataset_name = 'mnist' if args.dataset is None else args.dataset
+        self.dataset_name = 'mnist' if config.dataset is None else config.dataset
         if self.dataset_name not in ALLOWED_DATASETS:
             raise Exception(f'--dataset must be one of {ALLOWED_DATASETS}')
         print(f'Dataset: {self.dataset_name}')
 
-        self.dilation = args.dilation
+        self.dilation = config.dilation
         if self.dilation is None:
             self.dilation = 1
             print(f"--dilation not provided. Defaulting to {self.dilation}")
@@ -301,7 +317,7 @@ class CnnTrainer:
             self.dilation = int(self.dilation)
             print(f'Dilation set to {self.dilation}')
 
-        self.stride = args.stride
+        self.stride = config.stride
         if self.stride is None:
             self.stride = 1
             print(f"--stride not provided. Defaulting to {self.stride}")
@@ -309,7 +325,7 @@ class CnnTrainer:
             self.stride = int(self.stride)
             print(f'stride set to {self.stride}')
 
-        self.layers_num = args.layers_num
+        self.layers_num = config.layers_num
         if self.layers_num is None:
             self.layers_num = 2
             print(f"--layers_num not provided. Defaulting to {self.layers_num}")
@@ -317,20 +333,20 @@ class CnnTrainer:
             self.layers_num = int(self.layers_num)
             print(f'layers_num set to {self.layers_num}')
 
-        self.epochs = args.epochs
-        self.epochs = 10 if args.epochs is None else args.epochs
+        self.epochs = config.epochs
+        self.epochs = 10 if config.epochs is None else config.epochs
         if not isinstance(self.epochs, (int, float, complex)) and not isinstance(self.epochs, bool):
             raise Exception(f'--epochs must be valid number if present')
         print(f"Training model for epochs {self.epochs}")
         
-        self.base_path = args.path
+        self.base_path = config.path
         if self.base_path is None:
             default_path = self.default_base_path + '/default'
             print(f"--path not provided. Defaulting to {default_path}")
             self.base_path = default_path
         self.base_path = get_model_path(self.base_path, str(self.layers_num), str(self.epochs), self.dataset_name, self.dilation, self.stride)
 
-        self.dataset_path = args.dataset_path
+        self.dataset_path = config.dataset_path
         if self.dataset_path is None:
             dataset_path = self.default_base_path + '/Datasets'
             print(f"--dataset_path not provided. Defaulting to {self.base_path}")
@@ -338,29 +354,35 @@ class CnnTrainer:
         self.dataset_path = self.dataset_path + "/" + self.dataset_name
         print(f'Dataset path: {self.dataset_path}')
 
-        self.compute = args.compute
+        self.compute = config.compute
         if self.compute is None:
             self.compute = 'gpu'
             print(f"--compute not provided. Defaulting to {self.compute}")
         else:
             print(f'Compute mode set to {self.compute}. Will try to use it if system supports this option')
 
-        self.iterate = False if args.iterate in ['false', 'False', ''] else bool(args.iterate)
+        self.iterate = False if config.iterate in ['false', 'False', ''] else bool(config.iterate)
         if self.iterate == True:
             print("Will iterate through models")
-            self.first_kernel = args.first_kernel
-            self.second_kernel = args.second_kernel
+            self.first_kernel = config.first_kernel
+            self.second_kernel = config.second_kernel
             if self.first_kernel is None or self.second_kernel is None:
                 raise Exception(f'--first_kernel and --second_kernel must be set')
         
         self.channels = [3, 32, 64, 128, 256, 512]
-        if args.channels is not None:
-            self.channels = [int(numeric_string) for numeric_string in args.channels.split(',')]
+        if config.channels is not None:
+            self.channels = [int(numeric_string) for numeric_string in config.channels.split(',')]
             print(f'Channels defined: {self.channels}')
         else:
             print(F'Using default channels: {self.channels}')
+
+        print('Config batch size: ', config.batch_size)
+        self.batch_size = 10 if config.batch_size is None else config.batch_size
+        if not isinstance(self.batch_size, (int, float, complex)) and not isinstance(self.batch_size, bool):
+            raise Exception(f'--batch_size must be valid number if present')
+        print(f"Training model for epochs {self.batch_size}")
         
-        self.model_name = args.model
+        self.model_name = config.model
         
         return
 
@@ -505,7 +527,16 @@ class CnnTrainer:
             if int(total_processed / 1000) > last_processed_thousand:
                 last_processed_thousand = int(total_processed / 1000)
                 print(f'({self.dataset_name},{self.model.get_config()} Epoch {epoch + 1}/{n_epochs}. Trained on images {total_processed}/{self.N_train}', end='\r')
-            
+                try:
+                    update_dto = NetworkUpdateData()
+                    update_dto.config = f'{self.dataset_name},{self.model.get_config()}'
+                    update_dto.epoch = epoch + 1
+                    update_dto.total_epoch = n_epochs
+                    update_dto.img_processed = total_processed
+                    update_dto.total_imgs = self.N_train
+                    self.notification_queue.put_nowait(QueueItem(NotificationType.NETWORK_UPDATE, data=update_dto))
+                except:
+                    print('Could not add message to queue')
         # Saves cost of training data of epoch
         self.cost_list.append(cost)
             
