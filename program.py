@@ -6,7 +6,7 @@ import time
 import numpy as np
 from cnn_trainer import CnnTrainer, NetworkConfiguration
 from constants import ALLOWED_DATASETS
-from training_manager import NotificationType, QueueItem, TrainingManager
+from training_manager import NotificationType, QueueItem, TrainingManager, ProgressUpdateData
 from typing import List
 
 from mappings import args_to_net_config, config_to_args
@@ -47,14 +47,18 @@ def run_model_training(notification_queue: multiprocessing.Queue, networks: List
     num_networks = len(networks)
     print('Total networks', num_networks)
     for i, network in enumerate(networks):
+        # Update progress
+        progress = ProgressUpdateData()
+        progress.current = i
+        progress.total = num_networks
+        msg = QueueItem(NotificationType.TRAINING_TOTAL_PROGRESS, data=progress)
+
         print(f'------- Model ({network.first_kernel}, {network.first_kernel}) ---------')
         model_name, dataset, accuracy, time_per_sample = trainer.process(network, notification_queue)
         if model_name is not None:
             model_data = [model_name, dataset, accuracy, time_per_sample]
             models_training_results.append(model_data)
 
-        # Update progress
-        msg = QueueItem(NotificationType.TRAINING_TOTAL_PROGRESS, data=(i/num_networks*100))
         try:
             notification_queue.put_nowait(msg)
         except queue.Full:
