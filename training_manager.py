@@ -24,6 +24,10 @@ class NetworkUpdateData:
     img_processed: int
     total_imgs: int
 
+class ProgressUpdateData:
+    current: int
+    total: int
+
 @dataclass
 class QueueItem:
     type: NotificationType
@@ -95,10 +99,12 @@ class TrainingManager:
                     print(f'Invalid progress percent for epoch. Value {percent}')
                     return
                 self.epoch_progress_bar['value'] = epoch_percent
+                self.epoch_progress_label.config(text=f' {data.epoch} / {data.total_epoch}')
                 if img_percent <= 0:
                     print(f'Invalid progress percent for image. Value {percent}')
                     return
                 self.img_progress_bar['value'] = img_percent
+                self.img_progress_label.config(text=f' {data.img_processed} / {data.total_imgs}')
                 self.config_label.config(text=data.config)
             except:
                 print('Could not calculate update')
@@ -111,8 +117,10 @@ class TrainingManager:
             self.img_progress_bar['value'] = 0
 
         if notification.type == NotificationType.TRAINING_TOTAL_PROGRESS:
-            percent = float(notification.data)
+            data = cast(ProgressUpdateData, notification.data)
+            percent = data.current / data.total * 100
             self.overall_progress_bar['value'] = percent
+            self.overall_progress_label.config(text=f' {data.current} / {data.total}')
 
     def check_for_notification(self, notification_queue: multiprocessing.Queue):
         notification: QueueItem = None
@@ -129,25 +137,31 @@ class TrainingManager:
         
     def create_management_form(self, queue: multiprocessing.Queue):
         self.root = tk.Tk()
-        self.root.geometry("300x300")
+        self.root.geometry("600x300")
         self.frm = ttk.Frame(self.root, padding=10)
         self.frm.grid()
         ttk.Label(self.frm, text="CNN trainer manager").grid(column=0, row=0)
 
         ttk.Label(self.frm, text="Overall Progress:").grid(column=0, row=2)
         self.overall_progress_bar = ttk.Progressbar(self.frm, orient="horizontal", length=300, mode="determinate", maximum=100, value=0)
-        self.overall_progress_bar.grid(column=0, row=3, columnspan=2)
+        self.overall_progress_bar.grid(column=1, row=2, columnspan=2)
+        self.overall_progress_label = ttk.Label(self.frm, text="")
+        self.overall_progress_label.grid(column=3, row=2)
 
         ttk.Label(self.frm, text="Epoch Progress:").grid(column=0, row=4)
         self.epoch_progress_bar = ttk.Progressbar(self.frm, orient="horizontal", length=300, mode="determinate", maximum=100, value=0)
-        self.epoch_progress_bar.grid(column=0, row=5, columnspan=2)
+        self.epoch_progress_bar.grid(column=1, row=4, columnspan=2)
+        self.epoch_progress_label = ttk.Label(self.frm, text="")
+        self.epoch_progress_label.grid(column=3, row=4)
 
         ttk.Label(self.frm, text="Images Progress:").grid(column=0, row=6)
         self.img_progress_bar = ttk.Progressbar(self.frm, orient="horizontal", length=300, mode="determinate", maximum=100, value=0)
-        self.img_progress_bar.grid(column=0, row=7, columnspan=2)
+        self.img_progress_bar.grid(column=1, row=6, columnspan=2)
+        self.img_progress_label = ttk.Label(self.frm, text="")
+        self.img_progress_label.grid(column=3, row=6)
 
         self.config_label = ttk.Label(self.frm, text="")
-        self.config_label.grid(column=0, row=8, columnspan=2)
+        self.config_label.grid(column=0, row=8, columnspan=3)
 
         ttk.Button(self.frm, text="Stop", command=self.exit_program).grid(column=0, row=9)
         self.pause_button = self.create_pause_button()
