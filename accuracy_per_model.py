@@ -86,7 +86,7 @@ def get_dataset_scale_by_name(name):
         return 256
     
 def get_layers_count_by_name(name):
-    layer_start = name[len('train_0000_00_00_layer_'):]
+    layer_start = name[len('config_layer_'):]
     suffix = '_epoch_00_cifar10'
     ds_scale = get_dataset_scale_by_name(name)
     if ds_scale == 64:
@@ -105,7 +105,6 @@ if __name__ == '__main__':
 
     parser.add_argument('mode', choices=['show', 'save']) 
     parser.add_argument('--config')
-    parser.add_argument('--path')
     args = parser.parse_args()
 
     if not args.config:
@@ -117,6 +116,7 @@ if __name__ == '__main__':
     model_directories = []
     for config in data['configs']:
         path = get_model_path(config['path'], str(config['layers_num']), str(config['epochs']), config['dataset'], int(config['dilation']), int(config['stride']))
+        print(f'Searching model in {path}')
         model_dir = Path(path)
         if model_dir.is_dir():
             model_directories.append(model_dir)
@@ -128,6 +128,7 @@ if __name__ == '__main__':
     print('Plotting accuracy results...')
 
     if len(model_directories) == 0:
+        raise Exception(f'models not found in path')
         default_path = 'H:/Projects/University/NeuralNetworksForComparison'
         path = ''
         group_layer = None
