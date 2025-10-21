@@ -33,6 +33,7 @@ from models.small_cnn_generic_2_layers_enhanced import Small_CNN_Generic_2_layer
 from models.small_cnn_generic_3_layers import Small_CNN_Generic_3_layers
 from models.small_cnn_generic_4_layers import Small_CNN_Generic_4_layers
 from models.small_cnn_generic_5_layers import Small_CNN_Generic_5_layers
+from models.small_cnn_generic_5_layers_enhanced import Small_CNN_Generic_5_layers_enhanced
 from models.small_cnn_generic_6_layers import Small_CNN_Generic_6_layers
 from models.small_cnn_generic_7_layers import Small_CNN_Generic_7_layers
 from models.small_cnn_generic_8_layers import Small_CNN_Generic_8_layers
@@ -420,7 +421,7 @@ class CnnTrainer:
                 elif self.layers_num == 4:
                     model = Small_CNN_Generic_4_layers(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
                 elif self.layers_num == 5:
-                    model = Small_CNN_Generic_5_layers(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
+                    model = Small_CNN_Generic_5_layers_enhanced(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
                 elif self.layers_num == 6:
                     model = Small_CNN_Generic_6_layers(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
                 elif self.layers_num == 7:
