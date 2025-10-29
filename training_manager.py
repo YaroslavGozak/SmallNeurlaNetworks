@@ -76,10 +76,10 @@ class TrainingManager:
         print('Training stopped')
 
     def create_pause_button(self):
-        return ttk.Button(self.frm, text="Pause", command=self.suspend_process).grid(column=1, row=9)
+        return ttk.Button(self.frm, text="Pause", command=self.suspend_process).grid(column=3, row=9)
     
     def create_resume_button(self):
-        return ttk.Button(self.frm, text="Resume", command=self.resume_process).grid(column=1, row=9)
+        return ttk.Button(self.frm, text="Resume", command=self.resume_process).grid(column=3, row=9)
     
     def destroy_button(self, button: ttk.Button):
         if button is not None:
@@ -130,14 +130,13 @@ class TrainingManager:
             pass
 
         if notification is not None:
-            print('Got notification', notification)
             self.process_notification(notification)
 
         self.root.after(100, lambda: self.check_for_notification(notification_queue))
         
     def create_management_form(self, queue: multiprocessing.Queue):
         self.root = tk.Tk()
-        self.root.geometry("600x300")
+        self.root.geometry("1200x300")
         self.frm = ttk.Frame(self.root, padding=10)
         self.frm.grid()
         ttk.Label(self.frm, text="CNN trainer manager").grid(column=0, row=0)
@@ -161,7 +160,7 @@ class TrainingManager:
         self.img_progress_label.grid(column=3, row=6)
 
         self.config_label = ttk.Label(self.frm, text="")
-        self.config_label.grid(column=0, row=8, columnspan=3)
+        self.config_label.grid(column=0, row=8, columnspan=4)
 
         ttk.Button(self.frm, text="Stop", command=self.exit_program).grid(column=0, row=9)
         self.pause_button = self.create_pause_button()

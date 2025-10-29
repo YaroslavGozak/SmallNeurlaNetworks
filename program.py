@@ -1,6 +1,7 @@
 import argparse
 import json
 import multiprocessing
+from pathlib import Path
 import queue
 import time
 import numpy as np
@@ -10,6 +11,7 @@ from training_manager import NotificationType, QueueItem, TrainingManager, Progr
 from typing import List
 
 from mappings import args_to_net_config, config_to_args
+from utils import get_model_path
 
 
 
@@ -48,22 +50,25 @@ def run_model_training(notification_queue: multiprocessing.Queue, networks: List
     print('Total networks', num_networks)
     for i, network in enumerate(networks):
         # Update progress
-        progress = ProgressUpdateData()
-        progress.current = i
-        progress.total = num_networks
-        msg = QueueItem(NotificationType.TRAINING_TOTAL_PROGRESS, data=progress)
-
-        print(f'------- Model ({network.first_kernel}, {network.first_kernel}) ---------')
-        model_name, dataset, accuracy, time_per_sample = trainer.process(network, notification_queue)
-        if model_name is not None:
-            model_data = [model_name, dataset, accuracy, time_per_sample]
-            models_training_results.append(model_data)
-
         try:
+            progress = ProgressUpdateData()
+            progress.current = i
+            progress.total = num_networks
+            msg = QueueItem(NotificationType.TRAINING_TOTAL_PROGRESS, data=progress)
             notification_queue.put_nowait(msg)
         except queue.Full:
             print('Queue full')
             pass
+
+        print(f'------- Model ({network.first_kernel}, {network.first_kernel}) ---------')
+        net_path_str = get_model_path(network.path, str(network.layers_num), str(network.epochs), network.dataset, network.dilation, network.stride)
+        net_path = Path(net_path_str) 
+        model_name = None
+        if not net_path.is_dir():
+            model_name, dataset, accuracy, time_per_sample = trainer.process(network, notification_queue)
+        if model_name is not None:
+            model_data = [model_name, dataset, accuracy, time_per_sample]
+            models_training_results.append(model_data)
         
     if models_training_results is not None and any(models_training_results):
         print('========== Measurements ==========')
