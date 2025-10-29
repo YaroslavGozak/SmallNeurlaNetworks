@@ -87,13 +87,15 @@ def get_dataset_scale_by_name(name):
     
 def get_layers_count_by_name(name):
     layer_start = name[len('config_layer_'):]
+    print('layer_start', layer_start)
+    index = layer_start.index('_epoch')
     suffix = '_epoch_00_cifar10'
     ds_scale = get_dataset_scale_by_name(name)
     if ds_scale == 64:
         suffix += '_scaled_00'
     if ds_scale == 128 or ds_scale == 256:
         suffix += '_scaled_000'
-    return int(layer_start[:-len(suffix)])
+    return int(layer_start[:index])
 
 
 
