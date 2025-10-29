@@ -1,7 +1,7 @@
 {
     "configs" : [
         {
-            "path" : "H:\\Projects\\University\\NeauralNetworks\\train_2025_10_14\\config",
+            "path" : "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\train_2025_10_28\\config",
             "dataset": "cifar10",
             "dataset_path": "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\Datasets",
             "first_layers": "3,5",
@@ -13,10 +13,11 @@
             "dilation": 1,
             "layers_num": 9,
             "channels": "3,32,64,128,256,512,512,512",
-            "model": ""
+            "model": "",
+            "batch_size": 128
         },
         {
-            "path" : "H:\\Projects\\University\\NeauralNetworks\\train_2025_10_14\\config",
+            "path" : "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\train_2025_10_28\\config",
             "dataset": "cifar10",
             "dataset_path": "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\Datasets",
             "first_layers": "3,5",
@@ -28,10 +29,11 @@
             "dilation": 1,
             "layers_num": 8,
             "channels": "3,32,64,128,256,512,512,512",
-            "model": ""
+            "model": "",
+            "batch_size": 128
         },
         {
-            "path" : "H:\\Projects\\University\\NeauralNetworks\\train_2025_10_14\\config",
+            "path" : "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\train_2025_10_28\\config",
             "dataset": "cifar10",
             "dataset_path": "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\Datasets",
             "first_layers": "3,5",
@@ -43,10 +45,11 @@
             "dilation": 1,
             "layers_num": 7,
             "channels": "3,32,64,128,256,512,512,512",
-            "model": ""
+            "model": "",
+            "batch_size": 128
         },
         {
-            "path" : "H:\\Projects\\University\\NeauralNetworks\\train_2025_10_14\\config",
+            "path" : "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\train_2025_10_28\\config",
             "dataset": "cifar10",
             "dataset_path": "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\Datasets",
             "first_layers": "3,5",
@@ -58,10 +61,11 @@
             "dilation": 1,
             "layers_num": 6,
             "channels": "3,32,64,128,256,512,512,512",
-            "model": ""
+            "model": "",
+            "batch_size": 128
         },
         {
-            "path" : "H:\\Projects\\University\\NeauralNetworks\\train_2025_10_14\\config",
+            "path" : "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\train_2025_10_28\\config",
             "dataset": "cifar10",
             "dataset_path": "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\Datasets",
             "first_layers": "3,5",
@@ -73,10 +77,11 @@
             "dilation": 1,
             "layers_num": 5,
             "channels": "3,32,64,128,256,512,512,512",
-            "model": ""
+            "model": "",
+            "batch_size": 256
         },
         {
-            "path" : "H:\\Projects\\University\\NeauralNetworks\\train_2025_10_14\\config",
+            "path" : "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\train_2025_10_28\\config",
             "dataset": "cifar10",
             "dataset_path": "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\Datasets",
             "first_layers": "3,5",
@@ -88,10 +93,11 @@
             "dilation": 1,
             "layers_num": 4,
             "channels": "3,32,64,128,256,512,512,512",
-            "model": ""
+            "model": "",
+            "batch_size": 256
         },
         {
-            "path" : "H:\\Projects\\University\\NeauralNetworks\\train_2025_10_14\\config",
+            "path" : "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\train_2025_10_28\\config",
             "dataset": "cifar10",
             "dataset_path": "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\Datasets",
             "first_layers": "3,5",
@@ -103,10 +109,11 @@
             "dilation": 1,
             "layers_num": 3,
             "channels": "3,32,64,128,256,512,512,512",
-            "model": ""
+            "model": "",
+            "batch_size": 256
         },
         {
-            "path" : "H:\\Projects\\University\\NeauralNetworks\\train_2025_10_14\\config",
+            "path" : "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\train_2025_10_28\\config",
             "dataset": "cifar10",
             "dataset_path": "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\Datasets",
             "first_layers": "3,5",
@@ -118,11 +125,12 @@
             "dilation": 1,
             "layers_num": 2,
             "channels": "3,32,64,128,256,512,512,512",
-            "model": ""
+            "model": "",
+            "batch_size": 256
         },
 
         {
-            "path" : "H:\\Projects\\University\\NeauralNetworks\\train_2025_10_14\\config",
+            "path" : "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\train_2025_10_28\\config",
             "dataset": "cifar10_scaled_64",
             "dataset_path": "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\Datasets",
             "first_layers": "3,5",
@@ -134,10 +142,11 @@
             "dilation": 1,
             "layers_num": 9,
             "channels": "3,32,64,128,256,512,512,512",
-            "model": ""
+            "model": "",
+            "batch_size": 64
         },
         {
-            "path" : "H:\\Projects\\University\\NeauralNetworks\\train_2025_10_14\\config",
+            "path" : "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\train_2025_10_28\\config",
             "dataset": "cifar10_scaled_64",
             "dataset_path": "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\Datasets",
             "first_layers": "3,5",
@@ -149,10 +158,11 @@
             "dilation": 1,
             "layers_num": 8,
             "channels": "3,32,64,128,256,512,512,512",
-            "model": ""
+            "model": "",
+            "batch_size": 64
         },
         {
-            "path" : "H:\\Projects\\University\\NeauralNetworks\\train_2025_10_14\\config",
+            "path" : "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\train_2025_10_28\\config",
             "dataset": "cifar10_scaled_64",
             "dataset_path": "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\Datasets",
             "first_layers": "3,5",
@@ -164,10 +174,11 @@
             "dilation": 1,
             "layers_num": 7,
             "channels": "3,32,64,128,256,512,512,512",
-            "model": ""
+            "model": "",
+            "batch_size": 64
         },
         {
-            "path" : "H:\\Projects\\University\\NeauralNetworks\\train_2025_10_14\\config",
+            "path" : "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\train_2025_10_28\\config",
             "dataset": "cifar10_scaled_64",
             "dataset_path": "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\Datasets",
             "first_layers": "3,5",
@@ -179,10 +190,11 @@
             "dilation": 1,
             "layers_num": 6,
             "channels": "3,32,64,128,256,512,512,512",
-            "model": ""
+            "model": "",
+            "batch_size": 64
         },
         {
-            "path" : "H:\\Projects\\University\\NeauralNetworks\\train_2025_10_14\\config",
+            "path" : "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\train_2025_10_28\\config",
             "dataset": "cifar10_scaled_64",
             "dataset_path": "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\Datasets",
             "first_layers": "3,5",
@@ -194,10 +206,11 @@
             "dilation": 1,
             "layers_num": 5,
             "channels": "3,32,64,128,256,512,512,512",
-            "model": ""
+            "model": "",
+            "batch_size": 128
         },
         {
-            "path" : "H:\\Projects\\University\\NeauralNetworks\\train_2025_10_14\\config",
+            "path" : "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\train_2025_10_28\\config",
             "dataset": "cifar10_scaled_64",
             "dataset_path": "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\Datasets",
             "first_layers": "3,5",
@@ -209,10 +222,11 @@
             "dilation": 1,
             "layers_num": 4,
             "channels": "3,32,64,128,256,512,512,512",
-            "model": ""
+            "model": "",
+            "batch_size": 128
         },
         {
-            "path" : "H:\\Projects\\University\\NeauralNetworks\\train_2025_10_14\\config",
+            "path" : "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\train_2025_10_28\\config",
             "dataset": "cifar10_scaled_64",
             "dataset_path": "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\Datasets",
             "first_layers": "3,5",
@@ -224,10 +238,11 @@
             "dilation": 1,
             "layers_num": 3,
             "channels": "3,32,64,128,256,512,512,512",
-            "model": ""
+            "model": "",
+            "batch_size": 128
         },
         {
-            "path" : "H:\\Projects\\University\\NeauralNetworks\\train_2025_10_14\\config",
+            "path" : "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\train_2025_10_28\\config",
             "dataset": "cifar10_scaled_64",
             "dataset_path": "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\Datasets",
             "first_layers": "3,5",
@@ -239,11 +254,12 @@
             "dilation": 1,
             "layers_num": 2,
             "channels": "3,32,64,128,256,512,512,512",
-            "model": ""
+            "model": "",
+            "batch_size": 128
         },
 
         {
-            "path" : "H:\\Projects\\University\\NeauralNetworks\\train_2025_10_14\\config",
+            "path" : "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\train_2025_10_28\\config",
             "dataset": "cifar10_scaled_128",
             "dataset_path": "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\Datasets",
             "first_layers": "3,5",
@@ -255,10 +271,11 @@
             "dilation": 1,
             "layers_num": 9,
             "channels": "3,32,64,128,256,512,512,512",
-            "model": ""
+            "model": "",
+            "batch_size": 32
         },
         {
-            "path" : "H:\\Projects\\University\\NeauralNetworks\\train_2025_10_14\\config",
+            "path" : "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\train_2025_10_28\\config",
             "dataset": "cifar10_scaled_128",
             "dataset_path": "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\Datasets",
             "first_layers": "3,5",
@@ -270,10 +287,11 @@
             "dilation": 1,
             "layers_num": 8,
             "channels": "3,32,64,128,256,512,512,512",
-            "model": ""
+            "model": "",
+            "batch_size": 32
         },
         {
-            "path" : "H:\\Projects\\University\\NeauralNetworks\\train_2025_10_14\\config",
+            "path" : "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\train_2025_10_28\\config",
             "dataset": "cifar10_scaled_128",
             "dataset_path": "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\Datasets",
             "first_layers": "3,5",
@@ -285,10 +303,11 @@
             "dilation": 1,
             "layers_num": 7,
             "channels": "3,32,64,128,256,512,512,512",
-            "model": ""
+            "model": "",
+            "batch_size": 32
         },
         {
-            "path" : "H:\\Projects\\University\\NeauralNetworks\\train_2025_10_14\\config",
+            "path" : "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\train_2025_10_28\\config",
             "dataset": "cifar10_scaled_128",
             "dataset_path": "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\Datasets",
             "first_layers": "3,5",
@@ -300,10 +319,11 @@
             "dilation": 1,
             "layers_num": 6,
             "channels": "3,32,64,128,256,512,512,512",
-            "model": ""
+            "model": "",
+            "batch_size": 32
         },
         {
-            "path" : "H:\\Projects\\University\\NeauralNetworks\\train_2025_10_14\\config",
+            "path" : "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\train_2025_10_28\\config",
             "dataset": "cifar10_scaled_128",
             "dataset_path": "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\Datasets",
             "first_layers": "3,5",
@@ -315,10 +335,11 @@
             "dilation": 1,
             "layers_num": 5,
             "channels": "3,32,64,128,256,512,512,512",
-            "model": ""
+            "model": "",
+            "batch_size": 64
         },
         {
-            "path" : "H:\\Projects\\University\\NeauralNetworks\\train_2025_10_14\\config",
+            "path" : "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\train_2025_10_28\\config",
             "dataset": "cifar10_scaled_128",
             "dataset_path": "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\Datasets",
             "first_layers": "3,5",
@@ -330,10 +351,11 @@
             "dilation": 1,
             "layers_num": 4,
             "channels": "3,32,64,128,256,512,512,512",
-            "model": ""
+            "model": "",
+            "batch_size": 64
         },
         {
-            "path" : "H:\\Projects\\University\\NeauralNetworks\\train_2025_10_14\\config",
+            "path" : "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\train_2025_10_28\\config",
             "dataset": "cifar10_scaled_128",
             "dataset_path": "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\Datasets",
             "first_layers": "3,5",
@@ -345,10 +367,11 @@
             "dilation": 1,
             "layers_num": 3,
             "channels": "3,32,64,128,256,512,512,512",
-            "model": ""
+            "model": "",
+            "batch_size": 64
         },
         {
-            "path" : "H:\\Projects\\University\\NeauralNetworks\\train_2025_10_14\\config",
+            "path" : "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\train_2025_10_28\\config",
             "dataset": "cifar10_scaled_128",
             "dataset_path": "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\Datasets",
             "first_layers": "3,5",
@@ -360,11 +383,12 @@
             "dilation": 1,
             "layers_num": 2,
             "channels": "3,32,64,128,256,512,512,512",
-            "model": ""
+            "model": "",
+            "batch_size": 64
         },
 
         {
-            "path" : "H:\\Projects\\University\\NeauralNetworks\\train_2025_10_14\\config",
+            "path" : "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\train_2025_10_28\\config",
             "dataset": "cifar10_scaled_256",
             "dataset_path": "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\Datasets",
             "first_layers": "3,5",
@@ -376,10 +400,11 @@
             "dilation": 1,
             "layers_num": 9,
             "channels": "3,32,64,128,256,512,512,512",
-            "model": ""
+            "model": "",
+            "batch_size": 32
         },
         {
-            "path" : "H:\\Projects\\University\\NeauralNetworks\\train_2025_10_14\\config",
+            "path" : "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\train_2025_10_28\\config",
             "dataset": "cifar10_scaled_256",
             "dataset_path": "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\Datasets",
             "first_layers": "3,5",
@@ -391,10 +416,11 @@
             "dilation": 1,
             "layers_num": 8,
             "channels": "3,32,64,128,256,512,512,512",
-            "model": ""
+            "model": "",
+            "batch_size": 32
         },
         {
-            "path" : "H:\\Projects\\University\\NeauralNetworks\\train_2025_10_14\\config",
+            "path" : "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\train_2025_10_28\\config",
             "dataset": "cifar10_scaled_256",
             "dataset_path": "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\Datasets",
             "first_layers": "3,5",
@@ -406,10 +432,11 @@
             "dilation": 1,
             "layers_num": 7,
             "channels": "3,32,64,128,256,512,512,512",
-            "model": ""
+            "model": "",
+            "batch_size": 32
         },
         {
-            "path" : "H:\\Projects\\University\\NeauralNetworks\\train_2025_10_14\\config",
+            "path" : "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\train_2025_10_28\\config",
             "dataset": "cifar10_scaled_256",
             "dataset_path": "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\Datasets",
             "first_layers": "3,5",
@@ -421,10 +448,11 @@
             "dilation": 1,
             "layers_num": 6,
             "channels": "3,32,64,128,256,512,512,512",
-            "model": ""
+            "model": "",
+            "batch_size": 32
         },
         {
-            "path" : "H:\\Projects\\University\\NeauralNetworks\\train_2025_10_14\\config",
+            "path" : "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\train_2025_10_28\\config",
             "dataset": "cifar10_scaled_256",
             "dataset_path": "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\Datasets",
             "first_layers": "3,5",
@@ -436,10 +464,11 @@
             "dilation": 1,
             "layers_num": 5,
             "channels": "3,32,64,128,256,512,512,512",
-            "model": ""
+            "model": "",
+            "batch_size": 32
         },
         {
-            "path" : "H:\\Projects\\University\\NeauralNetworks\\train_2025_10_14\\config",
+            "path" : "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\train_2025_10_28\\config",
             "dataset": "cifar10_scaled_256",
             "dataset_path": "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\Datasets",
             "first_layers": "3,5",
@@ -451,10 +480,11 @@
             "dilation": 1,
             "layers_num": 4,
             "channels": "3,32,64,128,256,512,512,512",
-            "model": ""
+            "model": "",
+            "batch_size": 32
         },
         {
-            "path" : "H:\\Projects\\University\\NeauralNetworks\\train_2025_10_14\\config",
+            "path" : "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\train_2025_10_28\\config",
             "dataset": "cifar10_scaled_256",
             "dataset_path": "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\Datasets",
             "first_layers": "3,5",
@@ -466,10 +496,11 @@
             "dilation": 1,
             "layers_num": 3,
             "channels": "3,32,64,128,256,512,512,512",
-            "model": ""
+            "model": "",
+            "batch_size": 32
         },
         {
-            "path" : "H:\\Projects\\University\\NeauralNetworks\\train_2025_10_14\\config",
+            "path" : "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\train_2025_10_28\\config",
             "dataset": "cifar10_scaled_256",
             "dataset_path": "H:\\Projects\\University\\NeauralNetworks_ModelsAndDatasets\\Datasets",
             "first_layers": "3,5",
@@ -481,7 +512,8 @@
             "dilation": 1,
             "layers_num": 2,
             "channels": "3,32,64,128,256,512,512,512",
-            "model": ""
+            "model": "",
+            "batch_size": 32
         }
     ]
 }
