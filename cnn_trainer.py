@@ -377,11 +377,10 @@ class CnnTrainer:
         else:
             print(F'Using default channels: {self.channels}')
 
-        print('Config batch size: ', config.batch_size)
         self.batch_size = 10 if config.batch_size is None else config.batch_size
         if not isinstance(self.batch_size, (int, float, complex)) and not isinstance(self.batch_size, bool):
             raise Exception(f'--batch_size must be valid number if present')
-        print(f"Training model for epochs {self.batch_size}")
+        print('Config batch size: ', self.batch_size)
         
         self.model_name = config.model
         
