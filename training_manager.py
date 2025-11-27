@@ -170,7 +170,7 @@ class TrainingManager:
         self.root.mainloop()
 
     def start_managed_process(self, delegate, args=()):
-        delegate_to_master_queue: "queue.Queue[QueueItem]" = multiprocessing.Queue(100)
+        delegate_to_master_queue: "queue.Queue[QueueItem]" = multiprocessing.Queue()
         print(f'Created queue: {delegate_to_master_queue}')
 
         process = multiprocessing.Process(target=self.run_with_notify_completion, args=(delegate, delegate_to_master_queue, args))
