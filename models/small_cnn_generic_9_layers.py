@@ -15,17 +15,20 @@ class Small_CNN_Generic_9_layers(Small_CNN_Generic_2_layers):
         padding = int(first_layer_kernel_size / 2)
         # Channel Width after this layer is 32
         self.cnn1 = nn.Conv2d(in_channels=channels[0], out_channels=channels[1], kernel_size=first_layer_kernel_size, stride=stride, padding=padding, dilation=dilation)
+        self.bn1 = nn.BatchNorm2d(channels[1])
         self.relu1 = nn.ReLU(inplace=True)
                 
         padding = int(second_layer_kernel_size / 2)
         # Channel Width after this layer is 32
         self.cnn2 = nn.Conv2d(in_channels=channels[1], out_channels=channels[1], kernel_size=second_layer_kernel_size, stride=stride, padding=padding)
+        self.bn2 = nn.BatchNorm2d(channels[1])
         self.relu2 = nn.ReLU(inplace=True)
 
         default_kernel_size = 3
         padding = int(default_kernel_size / 2)
         # Channel Width after this layer is 32
         self.cnn3 = nn.Conv2d(in_channels=channels[1], out_channels=channels[1], kernel_size=default_kernel_size, stride=stride, padding=padding)
+        self.bn3 = nn.BatchNorm2d(channels[1])
         self.relu3 = nn.ReLU(inplace=True)
 
         # Channel Wifth after this layer is 16
@@ -33,9 +36,11 @@ class Small_CNN_Generic_9_layers(Small_CNN_Generic_2_layers):
 
         # Channel Width after this layer is 16
         self.cnn4 = nn.Conv2d(in_channels=channels[1], out_channels=channels[2], kernel_size=default_kernel_size, stride=1, padding=padding)
+        self.bn4 = nn.BatchNorm2d(channels[2])
         self.relu4 = nn.ReLU(inplace=True)
         # Channel Width after this layer is 16
         self.cnn5 = nn.Conv2d(in_channels=channels[2], out_channels=channels[2], kernel_size=default_kernel_size, stride=1, padding=padding)
+        self.bn5 = nn.BatchNorm2d(channels[2])
         self.relu5 = nn.ReLU(inplace=True)
 
         # Channel Width after this layer is 8
@@ -43,9 +48,11 @@ class Small_CNN_Generic_9_layers(Small_CNN_Generic_2_layers):
 
         # Channel Width after this layer is 8
         self.cnn6 = nn.Conv2d(in_channels=channels[2], out_channels=channels[3], kernel_size=default_kernel_size, stride=1, padding=padding)
+        self.bn6 = nn.BatchNorm2d(channels[3])
         self.relu6 = nn.ReLU(inplace=True)
         # Channel Width after this layer is 8
         self.cnn7 = nn.Conv2d(in_channels=channels[3], out_channels=channels[3], kernel_size=default_kernel_size, stride=1, padding=padding)
+        self.bn7 = nn.BatchNorm2d(channels[3])
         self.relu7 = nn.ReLU(inplace=True)
 
         # Channel Width after this layer is 4
@@ -53,9 +60,11 @@ class Small_CNN_Generic_9_layers(Small_CNN_Generic_2_layers):
 
         # Channel Width after this layer is 4
         self.cnn8 = nn.Conv2d(in_channels=channels[3], out_channels=channels[4], kernel_size=default_kernel_size, stride=1, padding=padding)
+        self.bn8 = nn.BatchNorm2d(channels[4])
         self.relu8 = nn.ReLU(inplace=True)
         # Channel Width after this layer is 4
         self.cnn9 = nn.Conv2d(in_channels=channels[4], out_channels=channels[4], kernel_size=default_kernel_size, stride=1, padding=padding)
+        self.bn9 = nn.BatchNorm2d(channels[4])
         self.relu9 = nn.ReLU(inplace=True)
 
         # Channel Width after this layer is 2
@@ -70,27 +79,45 @@ class Small_CNN_Generic_9_layers(Small_CNN_Generic_2_layers):
     def forward(self, x):
         # Puts the X value through each cnn, relu, and pooling layer and it is flattened for input into the fully connected layer
         x = self.cnn1(x)
+        x = self.bn1(x)
         x = self.relu1(x)
+
         x = self.cnn2(x)
+        x = self.bn2(x)
         x = self.relu2(x)
+
         x = self.cnn3(x)
+        x = self.bn3(x)
         x = self.relu3(x)
         x = self.maxpool3(x)
+
         x = self.cnn4(x)
+        x = self.bn4(x)
         x = self.relu4(x)
+
         x = self.cnn5(x)
+        x = self.bn5(x)
         x = self.relu5(x)
         x = self.maxpool5(x)
+
         x = self.cnn6(x)
+        x = self.bn6(x)
         x = self.relu6(x)
+
         x = self.cnn7(x)
+        x = self.bn7(x)
         x = self.relu7(x)
         x = self.maxpool7(x)
+
         x = self.cnn8(x)
+        x = self.bn8(x)
         x = self.relu8(x)
+
         x = self.cnn9(x)
+        x = self.bn9(x)
         x = self.relu9(x)
         x = self.maxpool9(x)
+
         x = x.view(x.size(0), -1)
         x = self.fc1(x)
         return x

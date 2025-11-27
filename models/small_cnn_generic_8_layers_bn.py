@@ -5,11 +5,11 @@ import torch.nn as nn
 
 from models.small_cnn_generic_2_layers import Small_CNN_Generic_2_layers
 
-class Small_CNN_Generic_8_layers(Small_CNN_Generic_2_layers):
+class Small_CNN_Generic_8_layers_bn(Small_CNN_Generic_2_layers):
     
     # Contructor
     def __init__(self, first_layer_kernel_size, second_layer_kernel_size, channels, image_resolution: int, dilation: int = 1, stride: int = 1):
-        super(Small_CNN_Generic_8_layers, self).__init__(first_layer_kernel_size, second_layer_kernel_size, channels, image_resolution, dilation, stride)
+        super(Small_CNN_Generic_8_layers_bn, self).__init__(first_layer_kernel_size, second_layer_kernel_size, channels, image_resolution, dilation, stride)
 
         # The reason we start with 1 channel is because we have a single black and white image
         padding = int(first_layer_kernel_size / 2)
