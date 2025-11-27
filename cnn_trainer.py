@@ -23,21 +23,21 @@ import matplotlib.pylab as plt
 
 from pathlib import Path
 
-from models.small_cnn_generic_10_layers import Small_CNN_Generic_10_layers
-from models.small_cnn_generic_11_layers import Small_CNN_Generic_11_layers
-from models.small_cnn_generic_12_layers import Small_CNN_Generic_12_layers
-from models.small_cnn_generic_13_layers import Small_CNN_Generic_13_layers
 from models.small_cnn_generic_1_layer import Small_CNN_Generic_1_layer
 from models.small_cnn_generic_2_layers import Small_CNN_Generic_2_layers
 from models.small_cnn_generic_2_layers_enhanced import Small_CNN_Generic_2_layers_enhanced
 from models.small_cnn_generic_3_layers import Small_CNN_Generic_3_layers
-from models.small_cnn_generic_4_layers import Small_CNN_Generic_4_layers
-from models.small_cnn_generic_5_layers import Small_CNN_Generic_5_layers
-from models.small_cnn_generic_5_layers_enhanced import Small_CNN_Generic_5_layers_enhanced
-from models.small_cnn_generic_6_layers import Small_CNN_Generic_6_layers
-from models.small_cnn_generic_7_layers import Small_CNN_Generic_7_layers
-from models.small_cnn_generic_8_layers import Small_CNN_Generic_8_layers
-from models.small_cnn_generic_9_layers import Small_CNN_Generic_9_layers
+from models.small_cnn_generic_4_layers_dp import Small_CNN_Generic_4_layers_dp
+from models.small_cnn_generic_5_layers_dp import Small_CNN_Generic_5_layers_dp
+from models.small_cnn_generic_6_layers_dp import Small_CNN_Generic_6_layers_dp
+from models.small_cnn_generic_7_layers_dp import Small_CNN_Generic_7_layers_dp
+from models.small_cnn_generic_8_layers_dp import Small_CNN_Generic_8_layers_dp
+from models.small_cnn_generic_9_layers_dp import Small_CNN_Generic_9_layers_dp
+from models.small_cnn_generic_10_layers_dp import Small_CNN_Generic_10_layers_dp
+from models.small_cnn_generic_11_layers import Small_CNN_Generic_11_layers
+from models.small_cnn_generic_12_layers import Small_CNN_Generic_12_layers
+from models.small_cnn_generic_13_layers import Small_CNN_Generic_13_layers
+
 from training_manager import NotificationType, QueueItem, NetworkUpdateData
 from utils import get_model_path
 
@@ -156,6 +156,7 @@ class CnnTrainer:
                 # Calculate average evaluation time
                 time_per_sample_ms = (elapsed_time_total / self.N_validation) * 1000
                 self.performance_list.append(time_per_sample_ms)
+                print(f'Accuracy on validation set: {accuracy}')
             end = time.time()
             elapsed_time = round(end - start, 1)
             print(f'Elapsed time: {elapsed_time} secs')
@@ -418,19 +419,19 @@ class CnnTrainer:
                 elif self.layers_num == 3:
                     model = Small_CNN_Generic_3_layers(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
                 elif self.layers_num == 4:
-                    model = Small_CNN_Generic_4_layers(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
+                    model = Small_CNN_Generic_4_layers_dp(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
                 elif self.layers_num == 5:
-                    model = Small_CNN_Generic_5_layers(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
+                    model = Small_CNN_Generic_5_layers_dp(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
                 elif self.layers_num == 6:
-                    model = Small_CNN_Generic_6_layers(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
+                    model = Small_CNN_Generic_6_layers_dp(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
                 elif self.layers_num == 7:
-                    model = Small_CNN_Generic_7_layers(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
+                    model = Small_CNN_Generic_7_layers_dp(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
                 elif self.layers_num == 8:
-                    model = Small_CNN_Generic_8_layers(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
+                    model = Small_CNN_Generic_8_layers_dp(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
                 elif self.layers_num == 9:
-                    model = Small_CNN_Generic_9_layers(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
+                    model = Small_CNN_Generic_9_layers_dp(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
                 elif self.layers_num == 10:
-                    model = Small_CNN_Generic_10_layers(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
+                    model = Small_CNN_Generic_10_layers_dp(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
                 elif self.layers_num == 11:
                     model = Small_CNN_Generic_11_layers(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
                 elif self.layers_num == 12:
@@ -526,7 +527,7 @@ class CnnTrainer:
             total_processed += len(y)
             if int(total_processed / 1000) > last_processed_thousand:
                 last_processed_thousand = int(total_processed / 1000)
-                print(f'({self.dataset_name},{self.model.get_config()} Epoch {epoch + 1}/{n_epochs}. Trained on images {total_processed}/{self.N_train}', end='\r')
+                print(f'({self.dataset_name},{self.model.get_config()} Epoch {epoch + 1}/{n_epochs}. Trained on images {total_processed}/{self.N_train}. Loss: {cost / total_processed}', end='\r')
                 try:
                     update_dto = NetworkUpdateData()
                     update_dto.config = f'{self.dataset_name},{self.model.get_config()}'
