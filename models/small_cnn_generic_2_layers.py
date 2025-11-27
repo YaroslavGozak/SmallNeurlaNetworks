@@ -70,6 +70,11 @@ class Small_CNN_Generic_2_layers(nn.Module):
         return f'{self.get_name()};  res:{self.image_resolution};  channels:{self.channels};  dilation:{self.dilation};  stride:{self.stride}'
     
     def get_config(self) -> NetworkConfig:
-        return NetworkConfig(type(self).__name__, self.channels, self.get_kernel_config(), self.image_resolution, self.dilation, self.stride)
+        return NetworkConfig(type(self).__name__, 
+                            #  self.channels, 
+                             self.get_kernel_config(), 
+                             self.image_resolution, 
+                             self.dilation, 
+                             self.stride)
 
     
