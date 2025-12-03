@@ -131,17 +131,6 @@ if __name__ == '__main__':
 
     if len(model_directories) == 0:
         raise Exception(f'models not found in path')
-        default_path = 'H:/Projects/University/NeuralNetworksForComparison'
-        path = ''
-        group_layer = None
-        if args.path is not None and args.path != '':
-            path = Path(args.path)
-            print(f'Path: "{path}"')
-        else:
-            path = Path(default_path)
-            print(f'Path not specified, using default path. ("{path}")')
-
-        model_directories = filter(lambda x: (x.is_dir()),  path.iterdir()) 
 
     cnn_datas = [CnnData]
     for model_directory in model_directories:
@@ -156,6 +145,7 @@ if __name__ == '__main__':
             cnn_data.layers = get_layers_count_by_name(os.path.basename(model_directory))
             
             cnn_iterations = list(filter(lambda x: (x.match('latest')),  cnn_directory.iterdir()))
+            cnn_iterations = [cnn_iter for cnn_iter in cnn_iterations if (cnn_iter / 'accuracy.pt').exists()]
             cnn_iterations_count = len(cnn_iterations)
             for cnn_iteration in cnn_iterations:
                 try:
