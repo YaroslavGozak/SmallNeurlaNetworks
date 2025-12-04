@@ -108,7 +108,7 @@ class TrainingManager:
                 self.img_progress_label.config(text=f' {data.img_processed} / {data.total_imgs}')
                 self.config_label.config(text=data.config)
                 if data.accuracy_list and len(data.accuracy_list) > 0:
-                    joined_accuracies = ', '.join([str(round(acc*100,2)) + '%' for acc in data.accuracy_list])
+                    joined_accuracies = ', '.join([str(round(acc*100,2)) + '%' for acc in data.accuracy_list[-3:]])
                     self.epoch_acc_label.config(text=f'Last accuracy: {joined_accuracies}')
             except:
                 print('Could not calculate update')
