@@ -1,10 +1,12 @@
 import argparse
 import json
 import multiprocessing
+import os
 from pathlib import Path
 import queue
 import time
 import numpy as np
+import torch
 from cnn_trainer import CnnTrainer, NetworkConfiguration
 from constants import ALLOWED_DATASETS
 from training_manager import NotificationType, QueueItem, TrainingManager, ProgressUpdateData
@@ -31,7 +33,6 @@ def create_model_configurations(args) -> List[NetworkConfiguration]:
         if args.first_layers is not None and args.second_layers is not None:
             first_layers = [int(numeric_string) for numeric_string in args.first_layers.split(',')]
             second_layers = [int(numeric_string) for numeric_string in args.second_layers.split(',')]
-            print(f'Layers defined.')
         else:
             first_layers = [3]
             second_layers = [3]
@@ -65,7 +66,21 @@ def run_model_training(notification_queue: multiprocessing.Queue, networks: List
         net_path = Path(net_path_str) 
         model_name = None
         if not net_path.is_dir():
+            print('Training new model at', net_path_str)
             model_name, dataset, accuracy, time_per_sample = trainer.process(network, notification_queue)
+        else:
+            model = CnnTrainer.create_model_from_config(network)
+            epoch_path = os.path.join(net_path, network.model, model.get_name(), 'latest', 'epoch.pth')
+            print('Searching for incomplete model at', epoch_path)
+            if os.path.exists(epoch_path):
+                print('Found existing path at', os.path.join(epoch_path))
+                i_start = int(torch.load(epoch_path)) + 1
+                if i_start >= network.epochs:
+                    print('Model already trained fully.')
+                    continue
+                print('Training model from epoch', i_start)
+                model_name, dataset, accuracy, time_per_sample = trainer.process(network, notification_queue, start_epoch=i_start)
+    
         if model_name is not None:
             model_data = [model_name, dataset, accuracy, time_per_sample]
             models_training_results.append(model_data)
@@ -83,15 +98,15 @@ def run_training_by_config(notification_queue: multiprocessing.Queue, args):
     # Opening JSON file
     f = open(args.config)
     data = json.load(f)
+    # Closing file
+    f.close()
     networks = []
     for config in data['configs']:
         args = config_to_args(args, config)
         config_networks = create_model_configurations(args)
         networks.extend(config_networks)
 
-    run_model_training(notification_queue, networks)
-    # Closing file
-    f.close()
+    run_model_training(notification_queue, networks) 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(

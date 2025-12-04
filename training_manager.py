@@ -23,6 +23,7 @@ class NetworkUpdateData:
     total_epoch: int
     img_processed: int
     total_imgs: int
+    accuracy_list: list[float]
 
 class ProgressUpdateData:
     current: int
@@ -106,6 +107,9 @@ class TrainingManager:
                 self.img_progress_bar['value'] = img_percent
                 self.img_progress_label.config(text=f' {data.img_processed} / {data.total_imgs}')
                 self.config_label.config(text=data.config)
+                if data.accuracy_list and len(data.accuracy_list) > 0:
+                    joined_accuracies = ', '.join([str(round(acc*100,2)) + '%' for acc in data.accuracy_list])
+                    self.epoch_acc_label.config(text=f'Last accuracy: {joined_accuracies}')
             except:
                 print('Could not calculate update')
             
@@ -136,7 +140,7 @@ class TrainingManager:
         
     def create_management_form(self, queue: multiprocessing.Queue):
         self.root = tk.Tk()
-        self.root.geometry("1200x300")
+        self.root.geometry("900x300")
         self.frm = ttk.Frame(self.root, padding=10)
         self.frm.grid()
         ttk.Label(self.frm, text="CNN trainer manager").grid(column=0, row=0)
@@ -152,6 +156,8 @@ class TrainingManager:
         self.epoch_progress_bar.grid(column=1, row=4, columnspan=2)
         self.epoch_progress_label = ttk.Label(self.frm, text="")
         self.epoch_progress_label.grid(column=3, row=4)
+        self.epoch_acc_label = ttk.Label(self.frm, text="Last accuracy: N/A")
+        self.epoch_acc_label.grid(column=4, row=4)
 
         ttk.Label(self.frm, text="Images Progress:").grid(column=0, row=6)
         self.img_progress_bar = ttk.Progressbar(self.frm, orient="horizontal", length=300, mode="determinate", maximum=100, value=0)

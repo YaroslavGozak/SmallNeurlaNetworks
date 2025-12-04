@@ -1,6 +1,7 @@
 from datetime import datetime
 import gc
 import multiprocessing
+import os
 import time
 
 import numpy as np
@@ -27,13 +28,13 @@ from models.small_cnn_generic_1_layer import Small_CNN_Generic_1_layer
 from models.small_cnn_generic_2_layers import Small_CNN_Generic_2_layers
 from models.small_cnn_generic_2_layers_enhanced import Small_CNN_Generic_2_layers_enhanced
 from models.small_cnn_generic_3_layers import Small_CNN_Generic_3_layers
-from models.small_cnn_generic_4_layers_dp import Small_CNN_Generic_4_layers_dp
-from models.small_cnn_generic_5_layers_dp import Small_CNN_Generic_5_layers_dp
-from models.small_cnn_generic_6_layers_dp import Small_CNN_Generic_6_layers_dp
-from models.small_cnn_generic_7_layers_dp import Small_CNN_Generic_7_layers_dp
-from models.small_cnn_generic_8_layers_dp import Small_CNN_Generic_8_layers_dp
-from models.small_cnn_generic_9_layers_dp import Small_CNN_Generic_9_layers_dp
-from models.small_cnn_generic_10_layers_dp import Small_CNN_Generic_10_layers_dp
+from models.small_cnn_generic_4_layers_bn import Small_CNN_Generic_4_layers_bn
+from models.small_cnn_generic_5_layers_bn import Small_CNN_Generic_5_layers_bn
+from models.small_cnn_generic_6_layers_bn import Small_CNN_Generic_6_layers_bn
+from models.small_cnn_generic_7_layers_bn import Small_CNN_Generic_7_layers_bn
+from models.small_cnn_generic_8_layers_bn import Small_CNN_Generic_8_layers_bn
+from models.small_cnn_generic_9_layers_bn import Small_CNN_Generic_9_layers_bn
+from models.small_cnn_generic_10_layers_bn import Small_CNN_Generic_10_layers_bn
 from models.small_cnn_generic_11_layers import Small_CNN_Generic_11_layers
 from models.small_cnn_generic_12_layers import Small_CNN_Generic_12_layers
 from models.small_cnn_generic_13_layers import Small_CNN_Generic_13_layers
@@ -77,7 +78,7 @@ class CnnTrainer:
     first_kernel = None
     second_kernel = None
 
-    def process(self, config: NetworkConfiguration, notification_queue: multiprocessing.Queue):
+    def process(self, config: NetworkConfiguration, notification_queue: multiprocessing.Queue, start_epoch: int = 0):
 
         self.extract_args(config)
         self.notification_queue = notification_queue
@@ -103,7 +104,7 @@ class CnnTrainer:
         self.N_train=len(train_dataset)
 
         # Create the model object using CNN class
-        self.model = self.create_model(self.model_name)
+        self.model = self.create_model(config)
         # Move model to appropriate device (cuda if GPU available and cpu otherwise)
         self.model = self.model.to(self.device)
 
@@ -134,7 +135,7 @@ class CnnTrainer:
 
             start = time.time()
             # Loops for each epoch
-            for epoch in range(self.epochs):
+            for epoch in range(start_epoch, self.epochs):
                 # Train model
 
                 # Decrease learning rate by 0.1 every 10 epochs
@@ -157,6 +158,12 @@ class CnnTrainer:
                 time_per_sample_ms = (elapsed_time_total / self.N_validation) * 1000
                 self.performance_list.append(time_per_sample_ms)
                 print(f'Accuracy on validation set: {accuracy}')
+
+                self.ensure_folder_exists(latest_path)
+                torch.save(self.model.state_dict(), os.path.join(latest_path, 'model.pt'))
+                torch.save(epoch, os.path.join(latest_path, 'epoch.pth'))
+                print(f'Saved checkpoint for epoch {epoch} at {latest_path}/model.pt and {latest_path}/epoch.pth')
+
             end = time.time()
             elapsed_time = round(end - start, 1)
             print(f'Elapsed time: {elapsed_time} secs')
@@ -386,21 +393,30 @@ class CnnTrainer:
         self.model_name = config.model
         
         return
+    
+    @staticmethod
+    def create_model_from_config(model_config: NetworkConfiguration):
+        
+        match model_config.model:
+            case "alexnet32":
+                model = AlexNet32(num_classes=10, dropout=0.5)
+            case "alexnet":
+                model = AlexNet(num_classes=10, dropout=0.5)
+            case "small_cnn_2_layers_enhanced":
+                model = Small_CNN_Generic_2_layers_enhanced(model_config.first_kernel, model_config.second_kernel, channels=model_config.channels, image_resolution=128, stride=model_config.stride, dilation=model_config.dilation)
 
-    def create_model(self, model_name):
-        if self.iterate == True:
-            self.model_name = f"small_cnn_{self.first_kernel}x{self.second_kernel}"
-            match self.dataset_name:
+        if model_config.iterate == True:
+            match model_config.dataset:
                 case 'mnist':
-                    model = Small_CNN_Generic_1_layer(self.first_kernel, channels=[1, 16, 32], image_resolution=16)
+                    model = Small_CNN_Generic_1_layer(model_config.first_kernel, channels=[1, 16, 32], image_resolution=16)
                 case 'mnist_scaled_32':
-                    model = Small_CNN_Generic_2_layers(self.first_kernel, self.second_kernel, channels=[1, 16, 32], image_resolution=32)
+                    model = Small_CNN_Generic_2_layers(model_config.first_kernel, model_config.second_kernel, channels=[1, 16, 32], image_resolution=32)
                 case 'mnist_scaled_64':
-                    model = Small_CNN_Generic_2_layers(self.first_kernel, self.second_kernel, channels=[1, 16, 32], image_resolution=64)
+                    model = Small_CNN_Generic_2_layers(model_config.first_kernel, model_config.second_kernel, channels=[1, 16, 32], image_resolution=64)
                 case 'mnist_scaled_128':
-                    model = Small_CNN_Generic_2_layers(self.first_kernel, self.second_kernel, channels=[1, 16, 32], image_resolution=128)
+                    model = Small_CNN_Generic_2_layers(model_config.first_kernel, model_config.second_kernel, channels=[1, 16, 32], image_resolution=128)
                 case 'mnist_scaled_256':
-                    model = Small_CNN_Generic_2_layers(self.first_kernel, self.second_kernel, channels=[1, 16, 32], image_resolution=256)
+                    model = Small_CNN_Generic_2_layers(model_config.first_kernel, model_config.second_kernel, channels=[1, 16, 32], image_resolution=256)
                 case 'cifar10':
                     image_resolution=32
                 case 'cifar10_scaled_64':
@@ -410,48 +426,59 @@ class CnnTrainer:
                 case 'cifar10_scaled_256':
                     image_resolution=256
                 case _:
-                    raise Exception(f'Generic model for {self.dataset_name} not found')
+                    raise Exception(f'Generic model for {model_config.dataset} not found')
+            
             if image_resolution is not None:
-                if self.layers_num == 1:
-                    model = Small_CNN_Generic_1_layer (self.first_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
-                elif self.layers_num == 2:
-                    model = Small_CNN_Generic_2_layers(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
-                elif self.layers_num == 3:
-                    model = Small_CNN_Generic_3_layers(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
-                elif self.layers_num == 4:
-                    model = Small_CNN_Generic_4_layers_dp(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
-                elif self.layers_num == 5:
-                    model = Small_CNN_Generic_5_layers_dp(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
-                elif self.layers_num == 6:
-                    model = Small_CNN_Generic_6_layers_dp(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
-                elif self.layers_num == 7:
-                    model = Small_CNN_Generic_7_layers_dp(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
-                elif self.layers_num == 8:
-                    model = Small_CNN_Generic_8_layers_dp(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
-                elif self.layers_num == 9:
-                    model = Small_CNN_Generic_9_layers_dp(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
-                elif self.layers_num == 10:
-                    model = Small_CNN_Generic_10_layers_dp(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
-                elif self.layers_num == 11:
-                    model = Small_CNN_Generic_11_layers(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
-                elif self.layers_num == 12:
-                    model = Small_CNN_Generic_12_layers(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
-                elif self.layers_num == 13:
-                    model = Small_CNN_Generic_13_layers(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=image_resolution, stride=self.stride, dilation=self.dilation)
+                channels = [3, 32, 64, 128, 256, 512]
+                if model_config.channels is not None:
+                    channels = [int(numeric_string) for numeric_string in model_config.channels.split(',')]
+                if model_config.layers_num == 1:
+                    model = Small_CNN_Generic_1_layer (model_config.first_kernel, channels=channels, image_resolution=image_resolution, stride=model_config.stride, dilation=model_config.dilation)
+                elif model_config.layers_num == 2:
+                    model = Small_CNN_Generic_2_layers(model_config.first_kernel, model_config.second_kernel, channels=channels, image_resolution=image_resolution, stride=model_config.stride, dilation=model_config.dilation)
+                elif model_config.layers_num == 3:
+                    model = Small_CNN_Generic_3_layers(model_config.first_kernel, model_config.second_kernel, channels=channels, image_resolution=image_resolution, stride=model_config.stride, dilation=model_config.dilation)
+                elif model_config.layers_num == 4:
+                    model = Small_CNN_Generic_4_layers_bn(model_config.first_kernel, model_config.second_kernel, channels=channels, image_resolution=image_resolution, stride=model_config.stride, dilation=model_config.dilation)
+                elif model_config.layers_num == 5:
+                    model = Small_CNN_Generic_5_layers_bn(model_config.first_kernel, model_config.second_kernel, channels=channels, image_resolution=image_resolution, stride=model_config.stride, dilation=model_config.dilation)
+                elif model_config.layers_num == 6:
+                    model = Small_CNN_Generic_6_layers_bn(model_config.first_kernel, model_config.second_kernel, channels=channels, image_resolution=image_resolution, stride=model_config.stride, dilation=model_config.dilation)
+                elif model_config.layers_num == 7:
+                    model = Small_CNN_Generic_7_layers_bn(model_config.first_kernel, model_config.second_kernel, channels=channels, image_resolution=image_resolution, stride=model_config.stride, dilation=model_config.dilation)
+                elif model_config.layers_num == 8:
+                    model = Small_CNN_Generic_8_layers_bn(model_config.first_kernel, model_config.second_kernel, channels=channels, image_resolution=image_resolution, stride=model_config.stride, dilation=model_config.dilation)
+                elif model_config.layers_num == 9:
+                    model = Small_CNN_Generic_9_layers_bn(model_config.first_kernel, model_config.second_kernel, channels=channels, image_resolution=image_resolution, stride=model_config.stride, dilation=model_config.dilation)
+                elif model_config.layers_num == 10:
+                    model = Small_CNN_Generic_10_layers_bn(model_config.first_kernel, model_config.second_kernel, channels=channels, image_resolution=image_resolution, stride=model_config.stride, dilation=model_config.dilation)
+                elif model_config.layers_num == 11:
+                    model = Small_CNN_Generic_11_layers(model_config.first_kernel, model_config.second_kernel, channels=channels, image_resolution=image_resolution, stride=model_config.stride, dilation=model_config.dilation)
+                elif model_config.layers_num == 12:
+                    model = Small_CNN_Generic_12_layers(model_config.first_kernel, model_config.second_kernel, channels=channels, image_resolution=image_resolution, stride=model_config.stride, dilation=model_config.dilation)
+                elif model_config.layers_num == 13:
+                    model = Small_CNN_Generic_13_layers(model_config.first_kernel, model_config.second_kernel, channels=channels, image_resolution=image_resolution, stride=model_config.stride, dilation=model_config.dilation)
                 else:
-                    raise Exception(f'layers_num value not supported. Got {self.layers_num}')
-            self.model_name = model.get_name()
-            return model
+                    raise Exception(f'layers_num value not supported. Got {model_config.layers_num}')
 
-        match model_name:
-            case "alexnet32":
-                model = AlexNet32(num_classes=10, dropout=0.5)
-            case "alexnet":
-                model = AlexNet(num_classes=10, dropout=0.5)
-            case "small_cnn_2_layers_enhanced":
-                model = Small_CNN_Generic_2_layers_enhanced(self.first_kernel, self.second_kernel, channels=self.channels, image_resolution=128, stride=self.stride, dilation=self.dilation)
-            case _:
-                raise Exception(f"--model {model_name} must be a valid model name")
+        if model is None:
+            raise Exception(f"Could not create model for model_config.model: {model_config.model} OR layers_num: {model_config.layers_num} AND iterate: {model_config.iterate}")
+        
+        return model
+
+    def create_model(self, model_config: NetworkConfiguration):
+        model = CnnTrainer.create_model_from_config(model_config)
+        self.model_name = model.get_name()
+        # Move model to appropriate device (cuda if GPU available and cpu otherwise)
+        model.to(self.device)
+        model.train()
+        folder_path = self.base_path + '/' + self.model_name + '/latest'
+        if os.path.exists(folder_path):
+            print('Loading checkpoint as one exists. Path: ' + folder_path + '/model.pt')
+            model.load_state_dict(torch.load(
+                os.path.join(folder_path, 'model.pt'),
+                map_location=self.device))
+        
         return model
 
     def get_datasets(self, dataset_name, composed):
@@ -535,6 +562,7 @@ class CnnTrainer:
                     update_dto.total_epoch = n_epochs
                     update_dto.img_processed = total_processed
                     update_dto.total_imgs = self.N_train
+                    update_dto.accuracy_list = self.accuracy_list
                     self.notification_queue.put_nowait(QueueItem(NotificationType.NETWORK_UPDATE, data=update_dto))
                 except:
                     print('Could not add message to queue')
