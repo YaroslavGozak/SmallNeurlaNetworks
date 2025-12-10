@@ -110,6 +110,9 @@ class TrainingManager:
                 if data.accuracy_list and len(data.accuracy_list) > 0:
                     joined_accuracies = ', '.join([str(round(acc*100,2)) + '%' for acc in data.accuracy_list[-3:]])
                     self.epoch_acc_label.config(text=f'Last accuracy: {joined_accuracies}')
+                if hasattr(data, 'updated_at'):
+                    last_update = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+                    self.root.title(f'CNN Trainer Manager - Last update {last_update}')
             except:
                 print('Could not calculate update')
             
