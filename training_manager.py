@@ -121,6 +121,7 @@ class TrainingManager:
             self.config_label.config(text=name)
             self.epoch_progress_bar['value'] = 0
             self.img_progress_bar['value'] = 0
+            self.epoch_acc_label.config(text=f'Last accuracy: N/A')
 
         if notification.type == NotificationType.TRAINING_TOTAL_PROGRESS:
             data = cast(ProgressUpdateData, notification.data)
