@@ -96,13 +96,13 @@ class TrainingManager:
             try:
                 epoch_percent = data.epoch / data.total_epoch * 100
                 img_percent = data.img_processed / data.total_imgs * 100
-                if epoch_percent <= 0:
-                    print(f'Invalid progress percent for epoch. Value {percent}')
+                if epoch_percent < 0:
+                    print(f'Invalid progress percent for epoch. Value {epoch_percent}')
                     return
                 self.epoch_progress_bar['value'] = epoch_percent
                 self.epoch_progress_label.config(text=f' {data.epoch} / {data.total_epoch}')
-                if img_percent <= 0:
-                    print(f'Invalid progress percent for image. Value {percent}')
+                if img_percent < 0:
+                    print(f'Invalid progress percent for image. Value {img_percent}')
                     return
                 self.img_progress_bar['value'] = img_percent
                 self.img_progress_label.config(text=f' {data.img_processed} / {data.total_imgs}')
@@ -112,8 +112,8 @@ class TrainingManager:
                     self.epoch_acc_label.config(text=f'Last accuracy: {joined_accuracies}')
                 last_update = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
                 self.root.title(f'CNN Trainer Manager - Last update {last_update}')
-            except:
-                print('Could not calculate update')
+            except Exception as e:
+                print(f'Could not calculate update: {e}')
             
 
         if notification.type == NotificationType.NEW_NETWORK:

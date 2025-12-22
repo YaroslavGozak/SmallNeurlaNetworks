@@ -14,26 +14,22 @@ class Small_CNN_Generic_9_layers_dp(Small_CNN_Generic_2_layers):
         padding = int(first_layer_kernel_size / 2)
         self.cnn1 = nn.Conv2d(in_channels=channels[0], out_channels=channels[1], kernel_size=first_layer_kernel_size, stride=stride, padding=padding, dilation=dilation)
         self.relu1 = nn.ReLU(inplace=True)
-        self.dropout1 = nn.Dropout2d(p=dropout_p)
         
         padding = int(second_layer_kernel_size / 2)
         self.cnn2 = nn.Conv2d(in_channels=channels[1], out_channels=channels[1], kernel_size=second_layer_kernel_size, stride=stride, padding=padding)
         self.relu2 = nn.ReLU(inplace=True)
-        self.dropout2 = nn.Dropout2d(p=dropout_p)
 
         default_kernel_size = 3
         padding = int(default_kernel_size / 2)
         self.cnn3 = nn.Conv2d(in_channels=channels[1], out_channels=channels[1], kernel_size=default_kernel_size, stride=stride, padding=padding)
         self.relu3 = nn.ReLU(inplace=True)
-        self.dropout3 = nn.Dropout2d(p=dropout_p)
         self.maxpool3=nn.MaxPool2d(kernel_size=2)
 
         self.cnn4 = nn.Conv2d(in_channels=channels[1], out_channels=channels[2], kernel_size=default_kernel_size, stride=1, padding=padding)
         self.relu4 = nn.ReLU(inplace=True)
-        self.dropout4 = nn.Dropout2d(p=dropout_p)
+        
         self.cnn5 = nn.Conv2d(in_channels=channels[2], out_channels=channels[2], kernel_size=default_kernel_size, stride=1, padding=padding)
         self.relu5 = nn.ReLU(inplace=True)
-        self.dropout5 = nn.Dropout2d(p=dropout_p)
         self.maxpool5=nn.MaxPool2d(kernel_size=2)
 
         self.cnn6 = nn.Conv2d(in_channels=channels[2], out_channels=channels[3], kernel_size=default_kernel_size, stride=1, padding=padding)
@@ -58,20 +54,15 @@ class Small_CNN_Generic_9_layers_dp(Small_CNN_Generic_2_layers):
     def forward(self, x):
         x = self.cnn1(x)
         x = self.relu1(x)
-        x = self.dropout1(x)
         x = self.cnn2(x)
         x = self.relu2(x)
-        x = self.dropout2(x)
         x = self.cnn3(x)
         x = self.relu3(x)
-        x = self.dropout3(x)
         x = self.maxpool3(x)
         x = self.cnn4(x)
         x = self.relu4(x)
-        x = self.dropout4(x)
         x = self.cnn5(x)
         x = self.relu5(x)
-        x = self.dropout5(x)
         x = self.maxpool5(x)
         x = self.cnn6(x)
         x = self.relu6(x)

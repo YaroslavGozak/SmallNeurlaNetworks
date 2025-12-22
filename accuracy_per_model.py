@@ -87,7 +87,6 @@ def get_dataset_scale_by_name(name):
     
 def get_layers_count_by_name(name):
     layer_start = name[len('config_layer_'):]
-    print('layer_start', layer_start)
     index = layer_start.index('_epoch')
     suffix = '_epoch_00_cifar10'
     ds_scale = get_dataset_scale_by_name(name)
@@ -158,7 +157,11 @@ if __name__ == '__main__':
                 except:
                     print(f"{cnn_data.name} doesn't have time per sample")
                     loaded_time_per_sample = None
-                loaded_accuracy = torch.load(cnn_iteration.joinpath('accuracy.pt'),  weights_only=True)
+                try:
+                    with open(cnn_iteration.joinpath('accuracy.txt'), 'r') as file:
+                        loaded_accuracy = [float(file.read().strip())]
+                except:
+                    loaded_accuracy = torch.load(cnn_iteration.joinpath('accuracy.pt'),  weights_only=True)
                 cnn_data.accuracy = loaded_accuracy[-1] # Take latest accuracy. This is model accuracy after last epoch
                 cnn_data.time = loaded_time
                 cnn_data.time_per_sample = loaded_time_per_sample
@@ -182,7 +185,7 @@ if __name__ == '__main__':
         cnn_datas.append(best_cnn_data)
         
                 
-    cnn_datas = list(sorted(filter(lambda cnn: (cnn.accuracy > 0.1), cnn_datas), key=lambda x: int(x.layers), reverse=True))
+    cnn_datas = list(sorted(filter(lambda cnn: (cnn.accuracy > 0.095), cnn_datas), key=lambda x: int(x.layers), reverse=True))
 
     fig = plot_lines(cnn_datas)
     fig_name = os.path.basename(path) #+ ' grouped by layer ' + str(group_layer)

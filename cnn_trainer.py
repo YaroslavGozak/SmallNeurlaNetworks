@@ -558,7 +558,7 @@ class CnnTrainer:
                 try:
                     update_dto = NetworkUpdateData()
                     update_dto.config = f'{self.dataset_name},{self.model.get_config()}'
-                    update_dto.epoch = epoch + 1
+                    update_dto.epoch = epoch
                     update_dto.total_epoch = n_epochs
                     update_dto.img_processed = total_processed
                     update_dto.total_imgs = self.N_train
