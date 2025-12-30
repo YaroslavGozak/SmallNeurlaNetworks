@@ -1,0 +1,231 @@
+{
+    "configs" : [
+        {
+            "path" : "D:\\Repositories\\Python\\NeuralNetworkModels\\train_2025_11_27\\config",
+            "dataset": "cifar10",
+            "epochs": 40,
+            "stride": 1,
+            "dilation": 1,
+            "layers_num": 10
+        },
+        {
+            "path" : "D:\\Repositories\\Python\\NeuralNetworkModels\\train_2025_11_27\\config",
+            "dataset": "cifar10",
+            "epochs": 40,
+            "stride": 1,
+            "dilation": 1,
+            "layers_num": 9
+        },
+        {
+            "path" : "D:\\Repositories\\Python\\NeuralNetworkModels\\train_2025_11_27\\config",
+            "dataset": "cifar10",
+            "epochs": 40,
+            "stride": 1,
+            "dilation": 1,
+            "layers_num": 8
+        },
+        {
+            "path" : "D:\\Repositories\\Python\\NeuralNetworkModels\\train_2025_11_27\\config",
+            "dataset": "cifar10",
+            "epochs": 40,
+            "stride": 1,
+            "dilation": 1,
+            "layers_num": 7
+        },
+        {
+            "path" : "D:\\Repositories\\Python\\NeuralNetworkModels\\train_2025_11_27\\config",
+            "dataset": "cifar10",
+            "epochs": 40,
+            "stride": 1,
+            "dilation": 1,
+            "layers_num": 6
+        },
+        {
+            "path" : "D:\\Repositories\\Python\\NeuralNetworkModels\\train_2025_11_27\\config",
+            "dataset": "cifar10",
+            "epochs": 40,
+            "stride": 1,
+            "dilation": 1,
+            "layers_num": 5
+        },
+        {
+            "path" : "D:\\Repositories\\Python\\NeuralNetworkModels\\train_2025_11_27\\config",
+            "dataset": "cifar10",
+            "epochs": 40,
+            "stride": 1,
+            "dilation": 1,
+            "layers_num": 4
+        },
+        
+        {
+            "path" : "D:\\Repositories\\Python\\NeuralNetworkModels\\train_2025_11_27\\config",
+            "dataset": "cifar10_scaled_64",
+            "epochs": 40,
+            "stride": 1,
+            "dilation": 1,
+            "layers_num": 4
+        },
+        {
+            "path" : "D:\\Repositories\\Python\\NeuralNetworkModels\\train_2025_11_27\\config",
+            "dataset": "cifar10_scaled_64",
+            "epochs": 40,
+            "stride": 1,
+            "dilation": 1,
+            "layers_num": 5
+        },
+        {
+            "path" : "D:\\Repositories\\Python\\NeuralNetworkModels\\train_2025_11_27\\config",
+            "dataset": "cifar10_scaled_64",
+            "epochs": 40,
+            "stride": 1,
+            "dilation": 1,
+            "layers_num": 6
+        },
+        {
+            "path" : "D:\\Repositories\\Python\\NeuralNetworkModels\\train_2025_11_27\\config",
+            "dataset": "cifar10_scaled_64",
+            "epochs": 40,
+            "stride": 1,
+            "dilation": 1,
+            "layers_num": 7
+        },
+        {
+            "path" : "D:\\Repositories\\Python\\NeuralNetworkModels\\train_2025_11_27\\config",
+            "dataset": "cifar10_scaled_64",
+            "epochs": 40,
+            "stride": 1,
+            "dilation": 1,
+            "layers_num": 8
+        },
+        {
+            "path" : "D:\\Repositories\\Python\\NeuralNetworkModels\\train_2025_11_27\\config",
+            "dataset": "cifar10_scaled_64",
+            "epochs": 40,
+            "stride": 1,
+            "dilation": 1,
+            "layers_num": 9
+        },
+        {
+            "path" : "D:\\Repositories\\Python\\NeuralNetworkModels\\train_2025_11_27\\config",
+            "dataset": "cifar10_scaled_64",
+            "epochs": 40,
+            "stride": 1,
+            "dilation": 1,
+            "layers_num": 10
+        },
+        
+        {
+            "path" : "D:\\Repositories\\Python\\NeuralNetworkModels\\train_2025_11_27\\config",
+            "dataset": "cifar10_scaled_128",
+            "epochs": 40,
+            "stride": 1,
+            "dilation": 1,
+            "layers_num": 10
+        },
+        {
+            "path" : "D:\\Repositories\\Python\\NeuralNetworkModels\\train_2025_11_27\\config",
+            "dataset": "cifar10_scaled_128",
+            "epochs": 40,
+            "stride": 1,
+            "dilation": 1,
+            "layers_num": 9
+        },
+        {
+            "path" : "D:\\Repositories\\Python\\NeuralNetworkModels\\train_2025_11_27\\config",
+            "dataset": "cifar10_scaled_128",
+            "epochs": 40,
+            "stride": 1,
+            "dilation": 1,
+            "layers_num": 8
+        },
+        {
+            "path" : "D:\\Repositories\\Python\\NeuralNetworkModels\\train_2025_11_27\\config",
+            "dataset": "cifar10_scaled_128",
+            "epochs": 40,
+            "stride": 1,
+            "dilation": 1,
+            "layers_num": 7
+        },
+        {
+            "path" : "D:\\Repositories\\Python\\NeuralNetworkModels\\train_2025_11_27\\config",
+            "dataset": "cifar10_scaled_128",
+            "epochs": 40,
+            "stride": 1,
+            "dilation": 1,
+            "layers_num": 6
+        },
+        {
+            "path" : "D:\\Repositories\\Python\\NeuralNetworkModels\\train_2025_11_27\\config",
+            "dataset": "cifar10_scaled_128",
+            "epochs": 40,
+            "stride": 1,
+            "dilation": 1,
+            "layers_num": 5
+        },
+        {
+            "path" : "D:\\Repositories\\Python\\NeuralNetworkModels\\train_2025_11_27\\config",
+            "dataset": "cifar10_scaled_128",
+            "epochs": 40,
+            "stride": 1,
+            "dilation": 1,
+            "layers_num": 4
+        },
+        
+        {
+            "path" : "D:\\Repositories\\Python\\NeuralNetworkModels\\train_2025_11_27\\config",
+            "dataset": "cifar10_scaled_256",
+            "epochs": 40,
+            "stride": 1,
+            "dilation": 1,
+            "layers_num": 10
+        },
+        {
+            "path" : "D:\\Repositories\\Python\\NeuralNetworkModels\\train_2025_11_27\\config",
+            "dataset": "cifar10_scaled_256",
+            "epochs": 40,
+            "stride": 1,
+            "dilation": 1,
+            "layers_num": 9
+        },
+        {
+            "path" : "D:\\Repositories\\Python\\NeuralNetworkModels\\train_2025_11_27\\config",
+            "dataset": "cifar10_scaled_256",
+            "epochs": 40,
+            "stride": 1,
+            "dilation": 1,
+            "layers_num": 8
+        },
+        {
+            "path" : "D:\\Repositories\\Python\\NeuralNetworkModels\\train_2025_11_27\\config",
+            "dataset": "cifar10_scaled_256",
+            "epochs": 40,
+            "stride": 1,
+            "dilation": 1,
+            "layers_num": 7
+        },
+        {
+            "path" : "D:\\Repositories\\Python\\NeuralNetworkModels\\train_2025_11_27\\config",
+            "dataset": "cifar10_scaled_256",
+            "epochs": 40,
+            "stride": 1,
+            "dilation": 1,
+            "layers_num": 6
+        },
+        {
+            "path" : "D:\\Repositories\\Python\\NeuralNetworkModels\\train_2025_11_27\\config",
+            "dataset": "cifar10_scaled_256",
+            "epochs": 40,
+            "stride": 1,
+            "dilation": 1,
+            "layers_num": 5
+        },
+        {
+            "path" : "D:\\Repositories\\Python\\NeuralNetworkModels\\train_2025_11_27\\config",
+            "dataset": "cifar10_scaled_256",
+            "epochs": 40,
+            "stride": 1,
+            "dilation": 1,
+            "layers_num": 4
+        }
+    ]
+}
