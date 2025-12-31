@@ -10,6 +10,8 @@ from enum import Enum
 from typing import cast
 
 import psutil
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
 
 class NotificationType(Enum):
     COMPLETE = 1
@@ -24,6 +26,7 @@ class NetworkUpdateData:
     img_processed: int
     total_imgs: int
     accuracy_list: list[float]
+    cost_list: list[float] | None
 
 class ProgressUpdateData:
     current: int
@@ -38,6 +41,10 @@ class TrainingManager:
     is_training_suspended = False
     pause_button: ttk.Button = None
     managed_pid = None
+    figure: Figure = None
+    ax1 = None
+    ax2 = None
+    canvas: FigureCanvasTkAgg = None
 
     def update_button_ui(self):
         if self.is_training_suspended:
@@ -110,6 +117,10 @@ class TrainingManager:
                 if data.accuracy_list and len(data.accuracy_list) > 0:
                     joined_accuracies = ', '.join([str(round(acc*100,2)) + '%' for acc in data.accuracy_list[-3:]])
                     self.epoch_acc_label.config(text=f'Last accuracy: {joined_accuracies}')
+                # Update chart with latest lists
+                acc_list = data.accuracy_list if hasattr(data, 'accuracy_list') else None
+                loss_list = data.cost_list if hasattr(data, 'cost_list') else None
+                self.update_chart(acc_list, loss_list)
                 last_update = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
                 self.root.title(f'CNN Trainer Manager - Last update {last_update}')
             except Exception as e:
@@ -122,6 +133,8 @@ class TrainingManager:
             self.epoch_progress_bar['value'] = 0
             self.img_progress_bar['value'] = 0
             self.epoch_acc_label.config(text=f'Last accuracy: N/A')
+            # Reset chart
+            self.update_chart([], [])
 
         if notification.type == NotificationType.TRAINING_TOTAL_PROGRESS:
             data = cast(ProgressUpdateData, notification.data)
@@ -171,12 +184,43 @@ class TrainingManager:
         self.config_label = ttk.Label(self.frm, text="")
         self.config_label.grid(column=0, row=8, columnspan=4)
 
+        # Embedded chart under progress bars
+        self.figure = Figure(figsize=(6.5, 2.5), dpi=100)
+        self.ax1 = self.figure.add_subplot(111)
+        self.ax2 = self.ax1.twinx()
+        self.ax1.set_xlabel('epoch', color='tab:red')
+        self.ax1.set_ylabel('Cost', color='tab:red')
+        self.ax2.set_ylabel('accuracy', color='tab:blue')
+        self.canvas = FigureCanvasTkAgg(self.figure, master=self.frm)
+        self.canvas.get_tk_widget().grid(column=0, row=10, columnspan=4, sticky='nsew')
+
         ttk.Button(self.frm, text="Stop", command=self.exit_program).grid(column=0, row=9)
         self.pause_button = self.create_pause_button()
         self.resume_button = None
 
         self.root.after(100, lambda: self.check_for_notification(queue))
         self.root.mainloop()
+
+    def update_chart(self, accuracy_list: list[float] | None, cost_list: list[float] | None):
+        if self.ax1 is None or self.ax2 is None or self.canvas is None:
+            return
+        try:
+            self.ax1.cla()
+            self.ax2.cla()
+            # Loss on left axis
+            self.ax1.set_xlabel('epoch', color='tab:red')
+            self.ax1.set_ylabel('Cost', color='tab:red')
+            if cost_list:
+                self.ax1.plot(cost_list, color='tab:red', marker='.', linewidth=1)
+            # Accuracy on right axis
+            self.ax2.set_ylabel('accuracy', color='tab:blue')
+            self.ax2.set_xlabel('epoch', color='tab:blue')
+            if accuracy_list:
+                self.ax2.plot(accuracy_list, color='tab:blue', marker='.', linewidth=1)
+            self.figure.tight_layout()
+            self.canvas.draw_idle()
+        except Exception as e:
+            print(f'Could not update chart: {e}')
 
     def start_managed_process(self, delegate, args=()):
         delegate_to_master_queue: "queue.Queue[QueueItem]" = multiprocessing.Queue()
